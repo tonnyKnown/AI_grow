@@ -6,6 +6,7 @@ target/
 *.log
 *.iml
 .idea/
+.trae/
 *.swp
 *.swo
 *~
@@ -27,5 +28,4 @@ chatbot-ai-service/*.db
 Thumbs.db
 
 # ---- General ----
-*.log
 *.tmp
