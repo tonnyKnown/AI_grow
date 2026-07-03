@@ -35,6 +35,7 @@ public class CategoryController {
     @GetMapping("/{id}")
     public Result<Category> getCategoryById(@PathVariable Long id) {
         Category response = categoryService.getCategoryById(id);
+
         return Result.success(response);
     }
     
