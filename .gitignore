@@ -1,0 +1,31 @@
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+*.war
+*.log
+*.iml
+.idea/
+*.swp
+*.swo
+*~
+
+# ---- Vue / Node ----
+oa-frontend/node_modules/
+oa-frontend/dist/
+oa-frontend/.idea/
+
+# ---- Python ----
+chatbot-ai-service/__pycache__/
+chatbot-ai-service/*.pyc
+chatbot-ai-service/venv/
+chatbot-ai-service/.env
+chatbot-ai-service/*.db
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- General ----
+*.log
+*.tmp

@@ -1,0 +1,69 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: business-service
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        username: nacos
+        password: nOn2h1l8cHSG
+  datasource:
+    url: jdbc:mysql://localhost:3306/example_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: your_actual_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.oa.business.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 微信支付配置
+wechat:
+  pay:
+    app-id: your_app_id
+    mch-id: your_mch_id
+    mch-key: your_mch_key
+    cert-path: classpath:cert/apiclient_cert.p12
+    notify-url: http://your-domain.com/api/pay/notify
+
+# XXL-Job 分布式任务调度配置
+#xxl:
+#  job:
+#    admin:
+#      addresses: http://127.0.0.1:8088/xxl-job-admin
+#    executor:
+#      app-name: business-service
+#      port: 9999
+#      log-path: ./logs/xxl-job/jobhandler
+#      log-retention-days: 30
+#    access-token: xxl-job-token
+
+# 本地LLM配置
+openai:
+  api-key: local
+  api-url: http://localhost:8000/v1
+  model: local-llm
+  timeout: 30000
+
+# JWT配置
+jwt:
+  secret: oa-system-jwt-secret-key-2024-for-secure-authentication-very-long-enough
+  expiration: 86400000

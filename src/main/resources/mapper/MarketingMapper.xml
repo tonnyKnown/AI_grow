@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oa.system.mapper.MarketingMapper">
+
+    <resultMap id="MarketingResultMap" type="com.oa.system.entity.Marketing">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="description" column="description"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="status" column="status"/>
+        <result property="rules" column="rules"/>
+        <result property="productIds" column="product_ids"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createByName" column="create_by_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="MarketingResultMap">
+        SELECT m.*, u.real_name as create_by_name
+        FROM marketing m
+        LEFT JOIN sys_user u ON m.create_by = u.id
+        ORDER BY m.create_time DESC
+    </select>
+
+    <select id="selectById" parameterType="java.lang.Long" resultMap="MarketingResultMap">
+        SELECT m.*, u.real_name as create_by_name
+        FROM marketing m
+        LEFT JOIN sys_user u ON m.create_by  = u.id
+        WHERE m.id = #{id}
+    </select>
+
+    <select id="selectByName" parameterType="java.lang.String" resultMap="MarketingResultMap">
+        SELECT * FROM marketing WHERE name LIKE CONCAT('%', #{name}, '%') ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByType" parameterType="java.lang.String" resultMap="MarketingResultMap">
+        SELECT * FROM marketing WHERE type = #{type} ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByStatus" parameterType="java.lang.Integer" resultMap="MarketingResultMap">
+        SELECT * FROM marketing WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.oa.system.entity.Marketing">
+        INSERT INTO marketing (
+            id, name, type, description, start_time, end_time, 
+            status, rules, product_ids, create_by, create_time, 
+            update_by, update_time, remark
+        ) VALUES (
+            #{id}, #{name}, #{type}, #{description}, #{startTime}, #{endTime},
+            #{status}, #{rules}, #{productIds}, #{createBy}, #{createTime},
+            #{updateBy}, #{updateTime}, #{remark}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.oa.system.entity.Marketing">
+        UPDATE marketing SET
+            name = #{name},
+            type = #{type},
+            description = #{description},
+            start_time = #{startTime},
+            end_time = #{endTime},
+            status = #{status},
+            rules = #{rules},
+            product_ids = #{productIds},
+            update_by = #{updateBy},
+            update_time = #{updateTime},
+            remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM marketing WHERE id = #{id}
+    </delete>
+
+    <select id="selectPage" resultMap="MarketingResultMap">
+        SELECT m.*, u.real_name as create_by_name
+        FROM marketing m
+        LEFT JOIN sys_user u ON m.create_by = u.id
+        <where>
+            <if test="name != null and name != ''">
+                AND m.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND m.type = #{type}
+            </if>
+            <if test="status != null">
+                AND m.status = #{status}
+            </if>
+        </where>
+        ORDER BY m.create_time DESC
+        LIMIT #{startRow}, #{pageSize}
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM marketing
+        <where>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>

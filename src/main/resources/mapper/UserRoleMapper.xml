@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oa.system.mapper.UserRoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.oa.system.entity.UserRole">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+    
+    <resultMap id="WithRoleResultMap" type="com.oa.system.entity.UserRole">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="role_id" property="roleId"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_key" property="roleKey"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM sys_user_role WHERE user_id = #{userId}
+    </select>
+    
+    <select id="selectByUserIdWithRole" resultMap="WithRoleResultMap">
+        SELECT ur.*, r.role_name, r.role_key 
+        FROM sys_user_role ur 
+        LEFT JOIN sys_role r ON ur.role_id = r.id 
+        WHERE ur.user_id = #{userId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO sys_user_role (user_id, role_id, create_by, create_time)
+        VALUES (#{userId}, #{roleId}, #{createBy}, #{createTime})
+    </insert>
+
+    <delete id="deleteByUserId">
+        DELETE FROM sys_user_role WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

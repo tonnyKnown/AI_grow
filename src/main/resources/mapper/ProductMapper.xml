@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oa.system.mapper.ProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.oa.system.entity.Product">
+        <id column="id" property="id"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_code" property="productCode"/>
+        <result column="category" property="category"/>
+        <result column="price" property="price"/>
+        <result column="stock" property="stock"/>
+        <result column="description" property="description"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="selectProductPage" resultMap="BaseResultMap">
+        SELECT * FROM sys_product
+        <where>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                AND update_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND update_time &lt;= #{endTime}
+            </if>
+        </where>
+        ORDER BY update_time DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countProductPage" resultType="long">
+        SELECT COUNT(*) FROM sys_product
+        <where>
+            <if test="category != null and category != ''">
+                AND category = #{category}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                AND update_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                AND update_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM sys_product WHERE id = #{id}
+    </select>
+
+    <select id="selectByProductCode" resultMap="BaseResultMap">
+        SELECT * FROM sys_product WHERE product_code = #{productCode}
+    </select>
+
+    <select id="selectByCategory" resultMap="BaseResultMap">
+        SELECT * FROM sys_product WHERE category = #{category} ORDER BY id ASC
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM sys_product WHERE status = #{status} ORDER BY id ASC
+    </select>
+
+    <select id="existsByProductCode" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM sys_product WHERE product_code = #{productCode}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_product (product_name, product_code, category, price, stock, description, image_url, status, create_by, create_time, update_by, update_time, remark)
+        VALUES (#{productName}, #{productCode}, #{category}, #{price}, #{stock}, #{description}, #{imageUrl}, #{status}, #{createBy}, #{createTime}, #{updateBy}, #{updateTime}, #{remark})
+    </insert>
+
+    <update id="update">
+        UPDATE sys_product
+        SET product_name = #{productName},
+            product_code = #{productCode},
+            category = #{category},
+            price = #{price},
+            stock = #{stock},
+            description = #{description},
+            image_url = #{imageUrl},
+            status = #{status},
+            update_by = #{updateBy},
+            update_time = #{updateTime},
+            remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_product WHERE id = #{id}
+    </delete>
+
+</mapper>

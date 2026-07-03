@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oa.system.mapper.OrderMapper">
+    
+    <resultMap id="BaseResultMap" type="com.oa.system.entity.Order">
+        <id column="id" property="id" />
+        <result column="order_no" property="orderNo" />
+        <result column="user_id" property="userId" />
+        <result column="product_id" property="productId" />
+        <result column="product_name" property="productName" />
+        <result column="quantity" property="quantity" />
+        <result column="unit_price" property="unitPrice" />
+        <result column="total_amount" property="totalAmount" />
+        <result column="status" property="status" />
+        <result column="shipping_address" property="shippingAddress" />
+        <result column="receiver_name" property="receiverName" />
+        <result column="receiver_phone" property="receiverPhone" />
+        <result column="remark" property="remark" />
+        <result column="create_by" property="createBy" />
+        <result column="create_time" property="createTime" />
+        <result column="update_by" property="updateBy" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+    
+    <select id="selectOrderPage" resultMap="BaseResultMap">
+        SELECT * FROM sys_order
+        WHERE 1=1
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="orderNo != null and orderNo != ''">AND order_no LIKE CONCAT('%', #{orderNo}, '%')</if>
+        ORDER BY id ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="countOrderPage" resultType="long">
+        SELECT COUNT(*) FROM sys_order
+        WHERE 1=1
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="orderNo != null and orderNo != ''">AND order_no LIKE CONCAT('%', #{orderNo}, '%')</if>
+    </select>
+    
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM sys_order WHERE id = #{id}
+    </select>
+    
+    <select id="selectByOrderNo" resultMap="BaseResultMap">
+        SELECT * FROM sys_order WHERE order_no = #{orderNo}
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_order (order_no, user_id, product_id, product_name, quantity, unit_price, total_amount, status, shipping_address, receiver_name, receiver_phone, remark, create_by, create_time)
+        VALUES (#{orderNo}, #{userId}, #{productId}, #{productName}, #{quantity}, #{unitPrice}, #{totalAmount}, #{status}, #{shippingAddress}, #{receiverName}, #{receiverPhone}, #{remark}, #{createBy}, #{createTime})
+    </insert>
+    
+    <update id="update">
+        UPDATE sys_order SET
+        <if test="quantity != null">quantity = #{quantity},</if>
+        <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+        <if test="status != null">status = #{status},</if>
+        <if test="shippingAddress != null">shipping_address = #{shippingAddress},</if>
+        <if test="receiverName != null">receiver_name = #{receiverName},</if>
+        <if test="receiverPhone != null">receiver_phone = #{receiverPhone},</if>
+        <if test="remark != null">remark = #{remark},</if>
+        update_by = #{updateBy},
+        update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM sys_order WHERE id = #{id}
+    </delete>
+</mapper>

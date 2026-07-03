@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oa.system.mapper.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.oa.system.entity.Role">
+        <id column="id" property="id"/>
+        <result column="role_name" property="roleName"/>
+        <result column="role_key" property="roleKey"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <select id="selectRolePage" resultMap="BaseResultMap">
+        SELECT * FROM sys_role
+        ORDER BY id ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countRolePage" resultType="long">
+        SELECT COUNT(*) FROM sys_role
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE id = #{id}
+    </select>
+
+    <select id="selectByRoleKey" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE role_key = #{roleKey}
+    </select>
+
+    <select id="selectByStatus" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE status = #{status} ORDER BY id ASC
+    </select>
+
+    <select id="selectByIds" resultMap="BaseResultMap">
+        SELECT * FROM sys_role WHERE id IN
+        <foreach item="roleId" collection="roleIds" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+    </select>
+
+    <select id="existsByRoleKey" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM sys_role WHERE role_key = #{roleKey}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_role (role_name, role_key, description, status, create_by, create_time, remark)
+        VALUES (#{roleName}, #{roleKey}, #{description}, #{status}, #{createBy}, #{createTime}, #{remark})
+    </insert>
+
+    <update id="update">
+        UPDATE sys_role
+        SET role_name = #{roleName},
+            description = #{description},
+            status = #{status},
+            update_by = #{updateBy},
+            update_time = #{updateTime},
+            remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_role WHERE id = #{id}
+    </delete>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM sys_role
+    </select>
+
+</mapper>
