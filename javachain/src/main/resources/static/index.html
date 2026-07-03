@@ -1,0 +1,2680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaChain - LangChain4j 测试平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .tab:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 450px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .message {
+            margin-bottom: 14px;
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user .avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.assistant .avatar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 0 12px 12px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            line-height: 1.6;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 0 12px 12px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 12px 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: none;
+            min-height: 50px;
+            transition: border-color 0.3s;
+        }
+
+        .input-area textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .session-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .session-label {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .session-id {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 4px 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+            margin: 20px 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .tool-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 14px;
+            transition: all 0.3s;
+        }
+
+        .tool-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .tool-name {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .tool-desc {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .tool-params {
+            font-size: 12px;
+            color: #495057;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .tool-example {
+            font-size: 11px;
+            color: #11998e;
+            font-family: monospace;
+            background: #f0faf8;
+            padding: 6px 10px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .skill-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+        }
+
+        .skill-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .skill-name {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 15px;
+        }
+
+        .skill-trigger {
+            font-size: 12px;
+            color: #11998e;
+            background: #e8f8f5;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .skill-desc {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .skill-steps {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .skill-steps-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .skill-step-item {
+            font-size: 12px;
+            color: #6c757d;
+            padding: 4px 0;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .skill-step-item:last-child {
+            border-bottom: none;
+        }
+
+        .skill-more {
+            font-size: 11px;
+            color: #adb5bd;
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        .skill-result {
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .skill-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .skill-result-name {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .skill-result-status {
+            font-size: 14px;
+        }
+
+        .skill-result-duration {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .skill-result-error {
+            background: #fff5f5;
+            color: #dc3545;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .skill-steps-result {
+            margin-top: 12px;
+        }
+
+        .skill-steps-result-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .skill-step-result {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .skill-step-result.success {
+            border-left: 3px solid #28a745;
+        }
+
+        .skill-step-result.error {
+            border-left: 3px solid #dc3545;
+            background: #fff5f5;
+        }
+
+        .step-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 6px;
+        }
+
+        .step-output {
+            font-size: 12px;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .step-error {
+            font-size: 12px;
+            color: #dc3545;
+            background: #ffeaea;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+
+        .files-list {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+
+        .file-item {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .response-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 14px;
+            min-height: 80px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 14px;
+            border: 2px solid #e9ecef;
+        }
+
+        .response-box.success {
+            background: #f0faf8;
+            border-color: #11998e;
+            color: #11998e;
+        }
+
+        .response-box.error {
+            background: #fef5f5;
+            border-color: #eb3349;
+            color: #eb3349;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e9ecef;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        /* ReAct Agent 样式 */
+        .reasoning-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .reasoning-steps {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+
+        .step-card.final {
+            border-left-color: #11998e;
+            background: linear-gradient(135deg, #f0faf8 0%, #ffffff 100%);
+        }
+
+        .step-card.error {
+            border-left-color: #eb3349;
+            background: linear-gradient(135deg, #fef5f5 0%, #ffffff 100%);
+        }
+
+        .step-number {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-number.final {
+            color: #11998e;
+        }
+
+        .step-number.error {
+            color: #eb3349;
+        }
+
+        .step-content {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #495057;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .step-icon {
+            font-size: 16px;
+        }
+
+        .agent-info {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .agent-info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .agent-info-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .agent-info-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .quick-questions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .quick-question {
+            padding: 8px 14px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #495057;
+        }
+
+        .quick-question:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* 确认对话框样式 */
+        .confirmation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .confirmation-box {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .confirmation-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .confirmation-box h3 {
+            color: #dc3545;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .confirmation-box p {
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .confirmation-details {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: left;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .confirmation-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .confirm-btn, .cancel-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .confirm-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .cancel-btn {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .cancel-btn:hover {
+            background: #dee2e6;
+            transform: translateY(-1px);
+        }
+
+        /* 警告状态样式 */
+        .response-box.warning {
+            background: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+
+        .react-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+
+        .react-tab {
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #6c757d;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -10px;
+            transition: all 0.3s;
+        }
+
+        .react-tab:hover {
+            color: #667eea;
+        }
+
+        .react-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6rem; }
+            .tabs { gap: 6px; }
+            .tab { padding: 10px 14px; font-size: 13px; }
+            .tool-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    
+    <script>
+        // 核心函数 - 必须在 HTML 之前定义
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+
+            // 延迟调用，确保函数已定义
+            setTimeout(() => {
+                if (tabId === 'files' && typeof loadFilesList === 'function') loadFilesList();
+                if (tabId === 'skills' && typeof loadSkills === 'function') loadSkills();
+                if (tabId === 'tools' && typeof loadTools === 'function') loadTools();
+                if (tabId === 'rag' && typeof loadStats === 'function') loadStats();
+                if (tabId === 'plugins') { 
+                    if (typeof loadPluginsInfo === 'function') loadPluginsInfo(); 
+                    if (typeof loadGovernancePlugins === 'function') loadGovernancePlugins(); 
+                }
+            }, 50);
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 JavaChain</h1>
+        <p class="subtitle">LangChain4j + DeepSeek + RAG + MCP 集成测试平台</p>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('chat')">💬 简单对话</button>
+            <button class="tab" onclick="showTab('auto')">🤖 智能助手</button>
+            <button class="tab" onclick="showTab('react')">🧠 ReAct 推理</button>
+            <button class="tab" onclick="showTab('rag')">📚 RAG 问答</button>
+            <button class="tab" onclick="showTab('files')">📁 文件管理</button>
+            <button class="tab" onclick="showTab('skills')">🎯 Skills</button>
+            <button class="tab" onclick="showTab('tools')">🛠️ 工具调用</button>
+            <button class="tab" onclick="showTab('plugins')">🔌 MCP 插件</button>
+        </div>
+
+        <!-- 简单对话 -->
+        <div id="chat" class="tab-content active">
+            <!-- 会话管理栏 -->
+            <div class="session-bar">
+                <div class="session-info">
+                    <span class="session-label">当前会话:</span>
+                    <span id="current-session-id" class="session-id">--</span>
+                </div>
+                <div class="session-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="createNewSession()">📝 新建会话</button>
+                    <button class="btn btn-secondary btn-sm" onclick="clearCurrentSession()">🗑️ 清空历史</button>
+                </div>
+            </div>
+            <div class="chat-container">
+                <div id="chat-messages" class="chat-messages">
+                    <div class="message assistant">
+                        <div class="avatar">AI</div>
+                        <div class="message-content">你好！我是 DeepSeek AI，有什么可以帮你的？</div>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <textarea id="chat-input" placeholder="输入消息，按 Enter 发送..."></textarea>
+                    <button class="btn btn-primary" onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能助手 -->
+        <div id="auto" class="tab-content">
+            <div class="chat-container">
+                <div id="auto-messages" class="chat-messages">
+                    <div class="message assistant">
+                        <div class="avatar">🤖</div>
+                        <div class="message-content">你好！我是智能助手，可以自动判断使用合适的工具来回答你的问题。<br/><br/>我会根据你的问题自动选择：获取时间、生成随机数、反转字符串、计算、查询知识库等工具。</div>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <textarea id="auto-input" placeholder="输入问题，我会自动判断使用哪个工具..."></textarea>
+                    <button class="btn btn-primary" onclick="sendAutoMessage()">发送</button>
+                </div>
+            </div>
+            
+            <h3 class="section-title">可用工具</h3>
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <div class="tool-name">🕐 getCurrentTime()</div>
+                    <div class="tool-desc">获取当前系统时间</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">🎲 generateRandomNumber(min, max)</div>
+                    <div class="tool-desc">生成指定范围内的随机整数</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">🔄 reverseString(input)</div>
+                    <div class="tool-desc">反转字符串</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">🧮 addNumbers(a, b)</div>
+                    <div class="tool-desc">计算两个数的和</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">📚 queryKnowledgeBase(question)</div>
+                    <div class="tool-desc">查询知识库信息</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ReAct 推理 -->
+        <div id="react" class="tab-content">
+            <div class="reasoning-container">
+                <div class="agent-info">
+                    <div class="agent-info-card">
+                        <div class="agent-info-value" id="react-steps">0</div>
+                        <div class="agent-info-label">推理步数</div>
+                    </div>
+                    <div class="agent-info-card">
+                        <div class="agent-info-value" id="react-time">0ms</div>
+                        <div class="agent-info-label">执行耗时</div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <textarea id="react-input" placeholder="输入问题，让 Agent 自主推理..."></textarea>
+                    <button class="btn btn-primary" onclick="sendReactMessage()">推理</button>
+                </div>
+
+                <div class="quick-questions">
+                    <span style="font-size: 14px; color: #6c757d; display: flex; align-items: center;">尝试：</span>
+                    <button class="quick-question" onclick="setReactQuestion('今天是哪一年？')">📅 今天是哪一年？</button>
+                    <button class="quick-question" onclick="setReactQuestion('生成一个随机数，然后反转它')">🎲 生成随机数并反转</button>
+                    <button class="quick-question" onclick="setReactQuestion('计算 5 + 10 × 2')">🧮 计算数学题</button>
+                    <button class="quick-question" onclick="setReactQuestion('北京今天的天气怎么样')">🌤️ 查询天气</button>
+                </div>
+
+                <div class="react-tabs">
+                    <button class="react-tab active" onclick="showReactTab('detail')">📊 详细过程</button>
+                    <button class="react-tab" onclick="showReactTab('quick')">⚡ 快速答案</button>
+                </div>
+
+                <div id="react-detail" class="react-detail">
+                    <div id="react-steps-container" class="reasoning-steps">
+                        <div class="empty-state">
+                            <div style="font-size: 48px; margin-bottom: 12px;">🧠</div>
+                            <div>等待你的问题...</div>
+                            <div style="font-size: 13px; color: #999; margin-top: 8px;">Agent 会思考 → 执行工具 → 观察结果 → 重复直到完成</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="react-quick" class="react-detail" style="display: none;">
+                    <div id="react-answer-container" class="response-box">
+                        等待推理...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAG 问答 -->
+        <div id="rag" class="tab-content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="kb-count">0</div>
+                    <div class="stat-label">知识库文档</div>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div id="rag-messages" class="chat-messages">
+                    <div class="message assistant">
+                        <div class="avatar">RAG</div>
+                        <div class="message-content">你好！我可以基于知识库回答你的问题。请先添加文档到知识库。</div>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <textarea id="rag-input" placeholder="输入问题..."></textarea>
+                    <button class="btn btn-primary" onclick="sendRagMessage()">提问</button>
+                </div>
+            </div>
+
+            <h3 class="section-title">添加文档到知识库</h3>
+            <div class="form-group">
+                <label>文档标题</label>
+                <input type="text" id="doc-title" placeholder="输入文档标题">
+            </div>
+            <div class="form-group">
+                <label>文档内容</label>
+                <textarea id="doc-content" rows="3" placeholder="输入文档内容"></textarea>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-success" onclick="addDocument()">添加文档</button>
+                <button class="btn btn-danger btn-sm" onclick="clearKnowledgeBase()">清空知识库</button>
+            </div>
+        </div>
+
+        <!-- 文件管理 -->
+        <div id="files" class="tab-content">
+            <h3 class="section-title">📂 资源文件</h3>
+            <div class="files-list" id="files-list">
+                <div class="loading">加载中</div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="vectorizeFiles()">向量化所有文件</button>
+            </div>
+            
+            <h3 class="section-title">向量化单个文件</h3>
+            <div class="form-group">
+                <label>文件名</label>
+                <input type="text" id="single-file" placeholder="输入文件名（如：华为手机产品信息.md）">
+            </div>
+            <button class="btn btn-success" onclick="vectorizeSingleFile()">向量化文件</button>
+            
+            <div class="response-box" id="files-response"></div>
+        </div>
+
+        <!-- Skills 技能 -->
+        <div id="skills" class="tab-content">
+            <h3 class="section-title">🎯 已加载的 Skills</h3>
+            <div class="btn-row" style="margin-bottom: 16px;">
+                <button class="btn btn-primary" onclick="loadSkills()">🔄 刷新列表</button>
+                <button class="btn btn-success" onclick="reloadSkillsAPI()">📥 重新加载 Skills</button>
+            </div>
+            <div class="skills-grid" id="skill-cards-list">
+                <div class="loading">加载中...</div>
+            </div>
+
+            <h3 class="section-title">⚡ 自动执行 Skill</h3>
+            <p style="color: #6c757d; font-size: 14px; margin-bottom: 12px;">
+                输入问题，系统自动匹配并执行合适的 Skill
+            </p>
+            <div class="form-group">
+                <label>问题描述</label>
+                <textarea id="skill-auto-input" rows="2" placeholder="例如：北京今天天气怎么样？"></textarea>
+            </div>
+            <div class="form-group">
+                <label>参数 (JSON 格式，可选)</label>
+                <textarea id="skill-auto-params" rows="2" placeholder='{"city": "北京"}'></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="executeSkillAuto()">🚀 自动执行</button>
+            <div class="response-box" id="skill-auto-response"></div>
+
+            <h3 class="section-title">📋 执行指定 Skill</h3>
+            <div class="form-group">
+                <label>Skill 名称</label>
+                <input type="text" id="skill-name" placeholder="例如：weather-report">
+            </div>
+            <div class="form-group">
+                <label>参数 (JSON 格式)</label>
+                <textarea id="skill-params" rows="2" placeholder='{"city": "北京"}'></textarea>
+            </div>
+            <button class="btn btn-success" onclick="executeSkillByName()">▶️ 执行 Skill</button>
+            <div class="response-box" id="skill-execute-response"></div>
+        </div>
+
+        <!-- 工具调用 -->
+        <div id="tools" class="tab-content">
+            <h3 class="section-title">🔧 MCP 工具</h3>
+            <div class="tool-grid" id="mcp-list">
+                <div class="loading">加载中</div>
+            </div>
+
+            <h3 class="section-title">执行工具</h3>
+            <div class="form-group">
+                <label>工具名称</label>
+                <input type="text" id="tool-name" placeholder="输入工具名称">
+            </div>
+            <div class="form-group">
+                <label>参数 (JSON 格式)</label>
+                <textarea id="tool-args" rows="2" placeholder='{"参数名": "参数值"}'></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="executeTool()">执行</button>
+            <div class="response-box" id="tool-response"></div>
+        </div>
+
+        <!-- MCP 插件管理 -->
+        <div id="plugins" class="tab-content">
+            <h3 class="section-title">🔌 MCP 插件治理</h3>
+            <p style="color: #6c757d; margin-bottom: 16px; font-size: 14px;">
+                插件生命周期管理：版本控制、状态管理、依赖检查
+            </p>
+
+            <div class="stats" style="margin-bottom: 20px;">
+                <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <div class="stat-value" id="governance-active">0</div>
+                    <div class="stat-label">活跃插件</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="stat-value" id="governance-disabled">0</div>
+                    <div class="stat-label">已禁用</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="governance-total">0</div>
+                    <div class="stat-label">总计</div>
+                </div>
+            </div>
+
+            <h3 class="section-title">📦 插件列表</h3>
+            <div class="btn-row" style="margin-bottom: 16px;">
+                <button class="btn btn-primary btn-sm" onclick="loadGovernancePlugins()">刷新</button>
+                <div class="form-group" style="margin: 0 12px; display: flex; align-items: center;">
+                    <select id="plugin-jar-select" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #ddd; min-width: 400px;">
+                        <option value="">-- 选择插件 JAR --</option>
+                        <option value="D:\agentDemo\mcp-plugins\weather-plugin\target\weather-plugin-1.0.0.jar">天气插件 (weather-plugin-1.0.0.jar)</option>
+                        <option value="D:\agentDemo\mcp-plugins\mysql-plugin\target\mysql-plugin-1.0.0.jar">MySQL 插件 (mysql-plugin-1.0.0.jar)</option>
+                        <option value="D:\agentDemo\mcp-plugins\filesystem-plugin\target\filesystem-plugin-1.0.0.jar">文件系统插件 (filesystem-plugin-1.0.0.jar)</option>
+                    </select>
+                </div>
+                <button class="btn btn-success btn-sm" onclick="loadSelectedPlugin()">加载选中的插件</button>
+            </div>
+            <div id="governance-plugins-list" class="tool-grid">
+                <div class="loading">加载中...</div>
+            </div>
+
+            <h3 class="section-title">🔍 版本比较工具</h3>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label>版本 1</label>
+                    <input type="text" id="version-1" placeholder="如: 1.0.0" value="1.0.0">
+                </div>
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label>版本 2</label>
+                    <input type="text" id="version-2" placeholder="如: 2.0.0" value="2.0.0">
+                </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="compareVersions()">比较版本</button>
+            <div class="response-box" id="version-compare-result" style="margin-top: 12px;"></div>
+
+            <h3 class="section-title">📋 已注册的 Servers</h3>
+            <div class="tool-grid" id="servers-list">
+                <div class="loading">加载中</div>
+            </div>
+
+            <h3 class="section-title">🔧 可用 MCP 工具</h3>
+            <div class="tool-grid" id="mcp-tools-list">
+                <div class="empty-state">请先加载插件</div>
+            </div>
+
+            <h3 class="section-title">⚡ 执行 MCP 工具</h3>
+            <div class="form-group">
+                <label>工具名称</label>
+                <input type="text" id="mcp-tool-name" value="mysql_query">
+            </div>
+            <div class="form-group">
+                <label>参数 (JSON 格式)</label>
+                <textarea id="mcp-tool-args" rows="2" value='{"sql": "SELECT * FROM users LIMIT 10"}'></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="executeMcpTool()">执行</button>
+            <div class="response-box" id="mcp-tool-response"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/chat';
+        const API_SKILL_BASE = '/api';
+        const AGENT_BASE = '/api/agent';
+
+        // ReAct 推理相关
+        let currentReactMode = 'detail';
+
+        function showReactTab(mode) {
+            currentReactMode = mode;
+            document.querySelectorAll('.react-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.react-tab[onclick="showReactTab('${mode}')"]`).classList.add('active');
+            
+            if (mode === 'detail') {
+                document.getElementById('react-detail').style.display = 'block';
+                document.getElementById('react-quick').style.display = 'none';
+            } else {
+                document.getElementById('react-detail').style.display = 'none';
+                document.getElementById('react-quick').style.display = 'block';
+            }
+        }
+
+        function setReactQuestion(question) {
+            document.getElementById('react-input').value = question;
+        }
+
+        // 当前 Job ID
+        let currentJobId = null;
+        let pollingInterval = null;
+        
+        // 发送 ReAct 推理请求（轮询方案）
+        async function sendReactMessage() {
+            const input = document.getElementById('react-input');
+            const question = input.value.trim();
+            
+            if (!question) return;
+
+            document.getElementById('react-steps').textContent = '0';
+            document.getElementById('react-time').textContent = '0ms';
+            document.getElementById('react-steps-container').innerHTML = '';
+            document.getElementById('react-answer-container').textContent = '正在推理中...';
+            document.getElementById('react-answer-container').className = 'response-box';
+
+            try {
+                const response = await fetch(`${AGENT_BASE}/react`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    document.getElementById('react-answer-container').textContent = '错误: ' + (result.message || '未知错误');
+                    document.getElementById('react-answer-container').className = 'response-box error';
+                    return;
+                }
+                
+                const data = result.data;
+                
+                if (data.status === 'pending_confirmation') {
+                    currentJobId = data.jobId;
+                    showConfirmationDialog(data);
+                    startPolling(currentJobId);
+                    return;
+                }
+                
+                finishResult(data);
+                
+            } catch (error) {
+                document.getElementById('react-answer-container').textContent = '错误: ' + error.message;
+                document.getElementById('react-answer-container').className = 'response-box error';
+            }
+        }
+        
+        function finishResult(data) {
+            stopPolling();
+            currentJobId = null;
+            document.getElementById('react-steps').textContent = data.steps || 0;
+            document.getElementById('react-time').textContent = (data.duration || 0) + 'ms';
+            document.getElementById('react-answer-container').textContent = data.answer || '推理完成';
+            document.getElementById('react-answer-container').className = data.status === 'completed' ? 'response-box success' : 'response-box error';
+        }
+        
+        // 开始轮询
+        function startPolling(jobId) {
+            stopPolling();
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${AGENT_BASE}/react/status/${jobId}`);
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        stopPolling();
+                        return;
+                    }
+                    
+                    const data = result.data;
+                    
+                    if (data.status === 'pending_confirmation') {
+                        updateConfirmationDialog(data);
+                    } else if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+                        stopPolling();
+                        finishResult(data);
+                    }
+                } catch (error) {
+                    console.error('轮询失败:', error);
+                    stopPolling();
+                }
+            }, 1000);
+        }
+        
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+        
+        // 显示确认对话框
+        function showConfirmationDialog(data) {
+            const confirmDiv = document.createElement('div');
+            confirmDiv.id = 'confirmation-dialog';
+            confirmDiv.innerHTML = `
+                <div class="confirmation-overlay">
+                    <div class="confirmation-box">
+                        <div class="confirmation-icon">⚠️</div>
+                        <h3>危险操作确认</h3>
+                        <p>Agent 需要执行以下操作：</p>
+                        <div class="confirmation-details">
+                            <strong>操作类型:</strong> ${escapeHtml(data.toolName || '未知')}<br>
+                            <strong>操作描述:</strong> ${escapeHtml(data.description || '')}
+                        </div>
+                        <div class="confirmation-warning">
+                            ⚠️ 此操作可能无法撤销，请确认是否继续？
+                        </div>
+                        <div class="confirmation-buttons">
+                            <button class="confirm-btn" onclick="confirmOperation(true)">确认执行</button>
+                            <button class="cancel-btn" onclick="confirmOperation(false)">取消操作</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(confirmDiv);
+            document.getElementById('react-answer-container').textContent = '等待用户确认...';
+            document.getElementById('react-answer-container').className = 'response-box warning';
+        }
+        
+        function updateConfirmationDialog(data) {
+            const dialog = document.getElementById('confirmation-dialog');
+            if (dialog) {
+                dialog.querySelector('.confirmation-details').innerHTML = `
+                    <strong>操作类型:</strong> ${escapeHtml(data.toolName || '未知')}<br>
+                    <strong>操作描述:</strong> ${escapeHtml(data.description || '')}
+                `;
+            }
+        }
+        
+        // 用户确认或取消操作
+        async function confirmOperation(confirm) {
+            const dialog = document.getElementById('confirmation-dialog');
+            if (dialog) dialog.remove();
+            
+            if (!currentJobId) return;
+            
+            if (confirm) {
+                document.getElementById('react-answer-container').textContent = '用户已确认，继续执行...';
+                document.getElementById('react-answer-container').className = 'response-box';
+                
+                try {
+                    await fetch(`${AGENT_BASE}/react/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jobId: currentJobId, confirm: true })
+                    });
+                } catch (error) {
+                    console.error('确认失败:', error);
+                }
+            } else {
+                stopPolling();
+                try {
+                    await fetch(`${AGENT_BASE}/react/confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ jobId: currentJobId, confirm: false })
+                    });
+                } catch (error) {
+                    console.error('取消失败:', error);
+                }
+                currentJobId = null;
+                document.getElementById('react-answer-container').textContent = '用户已取消操作';
+                document.getElementById('react-answer-container').className = 'response-box error';
+            }
+        }
+        
+        // 格式化推理步骤
+        function formatReasoningSteps(details) {
+            const lines = details.split('\n');
+            let html = '';
+            let stepNum = 0;
+            
+            for (const line of lines) {
+                if (line.includes('思考')) {
+                    stepNum++;
+                    html += `<div class="step-card"><div class="step-number"><span class="step-icon">💡</span> ${stepNum}</div><div class="step-content"><strong>思考:</strong> ${escapeHtml(line.replace(/思考.*?:/, '').trim())}</div></div>`;
+                } else if (line.includes('行动')) {
+                    html += `<div class="step-card"><div class="step-number"><span class="step-icon">🔧</span></div><div class="step-content"><strong>行动:</strong> ${escapeHtml(line.replace(/行动.*?:/, '').trim())}</div></div>`;
+                } else if (line.includes('观察')) {
+                    html += `<div class="step-card"><div class="step-number"><span class="step-icon">👁️</span></div><div class="step-content"><strong>观察:</strong> ${escapeHtml(line.replace(/观察.*?:/, '').trim())}</div></div>`;
+                } else if (line.includes('最终答案')) {
+                    html += `<div class="step-card final"><div class="step-number"><span class="step-icon">✅</span></div><div class="step-content"><strong>最终答案:</strong> ${escapeHtml(line.replace(/最终答案.*?:/, '').trim())}</div></div>`;
+                }
+            }
+            
+            return html || '<div class="empty-state">暂无详细步骤</div>';
+        }
+
+        // 流式推理（详细模式）
+        async function sendReactStream(question) {
+            let stepCount = 0;
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(`${AGENT_BASE}/react/stream`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('event:')) {
+                            const eventType = line.substring(7).trim();
+                            continue;
+                        }
+                        
+                        if (line.startsWith('data:')) {
+                            const dataStr = line.substring(5).trim();
+                            if (!dataStr) continue;
+                            
+                            try {
+                                const data = JSON.parse(dataStr);
+                                
+                                if (data.stepNumber) {
+                                    stepCount++;
+                                    addStepCard(data, stepCount);
+                                    document.getElementById('react-steps').textContent = stepCount;
+                                    document.getElementById('react-time').textContent = (Date.now() - startTime) + 'ms';
+                                }
+                                
+                                if (data.success !== undefined) {
+                                    // 完成
+                                    document.getElementById('react-answer-container').textContent = 
+                                        data.success ? data.answer : '推理失败';
+                                    document.getElementById('react-answer-container').className = 
+                                        data.success ? 'response-box success' : 'response-box error';
+                                    document.getElementById('react-time').textContent = (data.duration || 0) + 'ms';
+                                }
+                                
+                                if (data.error) {
+                                    document.getElementById('react-answer-container').textContent = '错误: ' + data.error;
+                                    document.getElementById('react-answer-container').className = 'response-box error';
+                                }
+                            } catch (e) {
+                                console.error('解析事件数据失败:', e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                document.getElementById('react-steps-container').innerHTML = 
+                    `<div class="step-card error">
+                        <div class="step-number error"><span class="step-icon">❌</span> 错误</div>
+                        <div class="step-content">${escapeHtml(error.message)}</div>
+                    </div>`;
+                document.getElementById('react-answer-container').textContent = '错误: ' + error.message;
+                document.getElementById('react-answer-container').className = 'response-box error';
+            }
+        }
+
+        // 添加步骤卡片
+        function addStepCard(data, stepNumber) {
+            const container = document.getElementById('react-steps-container');
+            const stepCard = document.createElement('div');
+            stepCard.className = 'step-card';
+            stepCard.id = `step-${stepNumber}`;
+            
+            let content = '';
+            
+            if (data.isFinal) {
+                stepCard.className = 'step-card success';
+                content = `
+                    <div class="step-number success"><span class="step-icon">✅</span> 最终答案</div>
+                    <div class="step-content">${escapeHtml(data.thought || '')}</div>
+                `;
+            } else {
+                content = `
+                    <div class="step-number"><span class="step-icon">🔄</span> 步骤 ${stepNumber}</div>
+                    <div class="step-content">
+                        ${data.thought ? `<div><strong>💭 思考:</strong> ${escapeHtml(data.thought)}</div>` : ''}
+                        ${data.action ? `<div><strong>🔧 行动:</strong> ${escapeHtml(data.action)}</div>` : ''}
+                        ${data.actionInput ? `<div><strong>📥 输入:</strong> ${escapeHtml(data.actionInput)}</div>` : ''}
+                        ${data.observation ? `<div><strong>📤 观察:</strong> ${escapeHtml(data.observation)}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            stepCard.innerHTML = content;
+            container.appendChild(stepCard);
+            stepCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        // 快速推理（简化模式）
+        async function sendReactQuick(question) {
+            try {
+                const response = await fetch(`${AGENT_BASE}/react/quick`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+
+                const result = await response.json();
+                
+                if (!result.success) {
+                    document.getElementById('react-answer-container').textContent = 
+                        result.message || '推理失败';
+                    document.getElementById('react-answer-container').className = 'response-box error';
+                    return;
+                }
+
+                const data = result.data || {};
+
+                document.getElementById('react-steps').textContent = data.steps || 0;
+                document.getElementById('react-time').textContent = (data.duration || 0) + 'ms';
+                document.getElementById('react-answer-container').textContent = data.answer;
+                document.getElementById('react-answer-container').className = 'response-box success';
+
+            } catch (error) {
+                document.getElementById('react-answer-container').textContent = '错误: ' + error.message;
+                document.getElementById('react-answer-container').className = 'response-box error';
+            }
+        }
+
+        // 渲染详细推理步骤
+        function renderDetailedSteps(detailsText) {
+            const container = document.getElementById('react-steps-container');
+
+            // 解析详细步骤字符串
+            const lines = detailsText.split('\n');
+            let html = '';
+            let currentStep = { number: 0, content: '', isFinal: false, isError: false };
+            let inStep = false;
+
+            for (let line of lines) {
+                if (line.startsWith('【步骤')) {
+                    if (inStep) {
+                        addStepHTML();
+                    }
+                    inStep = true;
+                    currentStep.number++;
+                    currentStep.content = '';
+                    currentStep.isFinal = line.includes('最终答案');
+                    currentStep.isError = false;
+                } else if (line.startsWith('══════════')) {
+                    continue;
+                } else if (line.includes('错误') || line.includes('❌')) {
+                    currentStep.isError = true;
+                    if (line.trim()) currentStep.content += line + '\n';
+                } else if (line.trim() && inStep) {
+                    currentStep.content += line + '\n';
+                }
+            }
+
+            if (inStep && currentStep.content.trim()) {
+                addStepHTML();
+            }
+
+            function addStepHTML() {
+                const icon = currentStep.isFinal ? '✅' : (currentStep.isError ? '❌' : '🔄');
+                const cardClass = currentStep.isFinal ? 'final' : (currentStep.isError ? 'error' : '');
+                const numClass = currentStep.isFinal ? 'final' : (currentStep.isError ? 'error' : '');
+
+                html += `
+                    <div class="step-card ${cardClass}">
+                        <div class="step-number ${numClass}">
+                            <span class="step-icon">${icon}</span> 
+                            步骤 ${currentStep.number}${currentStep.isFinal ? ' - 最终答案' : ''}
+                        </div>
+                        <div class="step-content">${escapeHtml(currentStep.content.trim())}</div>
+                    </div>
+                `;
+            }
+
+            // 如果没有解析成功，直接显示原始文本
+            if (!html) {
+                html = `
+                    <div class="step-card">
+                        <div class="step-number"><span class="step-icon">📋</span> 推理结果</div>
+                        <div class="step-content">${escapeHtml(detailsText)}</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // 渲染简单答案
+        function renderSimpleAnswer(answer) {
+            document.getElementById('react-steps-container').innerHTML = 
+                `<div class="step-card final">
+                    <div class="step-number final"><span class="step-icon">✅</span> 最终答案</div>
+                    <div class="step-content">${escapeHtml(answer)}</div>
+                </div>`;
+        }
+
+        // 当前会话ID（存储在本地）
+        let currentSessionId = localStorage.getItem('chat-session-id') || '';
+
+        // 创建新会话
+        async function createNewSession() {
+            try {
+                const response = await fetch(`${API_BASE}/session/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    currentSessionId = result.data.sessionId;
+                    localStorage.setItem('chat-session-id', currentSessionId);
+                    document.getElementById('current-session-id').textContent = currentSessionId.substring(0, 8) + '...';
+                    // 清空消息列表
+                    document.getElementById('chat-messages').innerHTML = `
+                        <div class="message assistant">
+                            <div class="avatar">AI</div>
+                            <div class="message-content">你好！我是 DeepSeek AI，有什么可以帮你的？</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('创建会话失败:', error);
+            }
+        }
+
+        // 页面加载时创建或恢复会话
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!currentSessionId) {
+                createNewSession();
+            } else {
+                document.getElementById('current-session-id').textContent = currentSessionId.substring(0, 8) + '...';
+            }
+        });
+
+        // 清空当前会话历史
+        async function clearCurrentSession() {
+            if (!currentSessionId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/session/${currentSessionId}/clear`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('chat-messages').innerHTML = `
+                        <div class="message assistant">
+                            <div class="avatar">AI</div>
+                            <div class="message-content">你好！我是 DeepSeek AI，有什么可以帮你的？</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('清空会话失败:', error);
+            }
+        }
+
+        // 简单对话（带历史）
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage('user', message, 'chat-messages');
+            input.value = '';
+
+            // 如果没有会话，先创建
+            if (!currentSessionId) {
+                await createNewSession();
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/simple/with-history`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: currentSessionId, message })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addMessage('assistant', result.data || result.message, 'chat-messages');
+                } else {
+                    addMessage('assistant', '错误: ' + (result.message || '操作失败'), 'chat-messages');
+                }
+            } catch (error) {
+                addMessage('assistant', '错误: ' + error.message, 'chat-messages');
+            }
+        }
+
+        // RAG 问答
+        async function sendRagMessage() {
+            const input = document.getElementById('rag-input');
+            const question = input.value.trim();
+            if (!question) return;
+
+            addMessage('user', question, 'rag-messages');
+            input.value = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/rag`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addMessage('assistant', result.data || result.message, 'rag-messages');
+                } else {
+                    addMessage('assistant', '错误: ' + (result.message || '操作失败'), 'rag-messages');
+                }
+            } catch (error) {
+                addMessage('assistant', '错误: ' + error.message, 'rag-messages');
+            }
+        }
+
+        // 智能助手（自动选择工具）
+        async function sendAutoMessage() {
+            const input = document.getElementById('auto-input');
+            const question = input.value.trim();
+            if (!question) return;
+
+            addMessage('user', question, 'auto-messages');
+            input.value = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/auto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    addMessage('assistant', result.data || result.message, 'auto-messages');
+                } else {
+                    addMessage('assistant', '错误: ' + (result.message || '操作失败'), 'auto-messages');
+                }
+            } catch (error) {
+                addMessage('assistant', '错误: ' + error.message, 'auto-messages');
+            }
+        }
+
+        // 添加文档
+        async function addDocument() {
+            const title = document.getElementById('doc-title').value || '未命名文档';
+            const content = document.getElementById('doc-content').value;
+            
+            if (!content) {
+                alert('请输入文档内容');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/rag/load`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: content, title })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message || '文档添加成功！');
+                    document.getElementById('doc-title').value = '';
+                    document.getElementById('doc-content').value = '';
+                    loadStats();
+                } else {
+                    alert('添加失败: ' + (result.message || '操作失败'));
+                }
+            } catch (error) {
+                alert('添加失败: ' + error.message);
+            }
+        }
+
+        // 清空知识库
+        async function clearKnowledgeBase() {
+            if (!confirm('确定要清空知识库吗？')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/rag/clear`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message || '知识库已清空');
+                    document.getElementById('rag-messages').innerHTML = 
+                        '<div class="message assistant"><div class="avatar">RAG</div><div class="message-content">知识库已清空，请添加新文档。</div></div>';
+                    loadStats();
+                } else {
+                    alert('清空失败: ' + (result.message || '操作失败'));
+                }
+            } catch (error) {
+                alert('清空失败: ' + error.message);
+            }
+        }
+
+        // 加载文件列表
+        async function loadFilesList() {
+            try {
+                const response = await fetch(`${API_BASE}/files/list`);
+                const result = await response.json();
+                const files = result.success ? (result.data || []) : [];
+                const list = document.getElementById('files-list');
+                
+                if (!result.success) {
+                    list.innerHTML = '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                    return;
+                }
+                
+                if (!files || files.length === 0) {
+                    list.innerHTML = '<div class="empty-state">暂无文件</div>';
+                    return;
+                }
+
+                list.innerHTML = files.map(file => `
+                    <div class="file-item">
+                        <span class="file-name">${escapeHtml(file)}</span>
+                        <button class="btn btn-primary btn-sm" onclick="vectorizeSingleFileByName('${escapeHtml(file)}')">向量化</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('files-list').innerHTML = 
+                    '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        // 向量化所有文件
+        async function vectorizeFiles() {
+            const responseBox = document.getElementById('files-response');
+            responseBox.textContent = '正在向量化...';
+            responseBox.className = 'response-box';
+            
+            try {
+                const response = await fetch(`${API_BASE}/files/vectorize`);
+                const result = await response.json();
+                if (result.success) {
+                    responseBox.textContent = result.data || result.message;
+                    responseBox.className = 'response-box success';
+                    loadStats();
+                } else {
+                    responseBox.textContent = '错误: ' + (result.message || '操作失败');
+                    responseBox.className = 'response-box error';
+                }
+            } catch (error) {
+                responseBox.textContent = '错误: ' + error.message;
+                responseBox.className = 'response-box error';
+            }
+        }
+
+        // 向量化单个文件
+        async function vectorizeSingleFile() {
+            const filePath = document.getElementById('single-file').value;
+            if (!filePath) {
+                alert('请输入文件名');
+                return;
+            }
+            await vectorizeFileByName(filePath);
+        }
+
+        async function vectorizeSingleFileByName(fileName) {
+            document.getElementById('single-file').value = fileName;
+            await vectorizeFileByName(fileName);
+        }
+
+        async function vectorizeFileByName(fileName) {
+            const responseBox = document.getElementById('files-response');
+            responseBox.textContent = '正在向量化...';
+            responseBox.className = 'response-box';
+            
+            try {
+                const response = await fetch(`${API_BASE}/files/vectorize/single`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filePath: fileName })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    responseBox.textContent = result.data || result.message;
+                    responseBox.className = 'response-box success';
+                    loadStats();
+                } else {
+                    responseBox.textContent = '错误: ' + (result.message || '操作失败');
+                    responseBox.className = 'response-box error';
+                }
+            } catch (error) {
+                responseBox.textContent = '错误: ' + error.message;
+                responseBox.className = 'response-box error';
+            }
+        }
+
+        // 加载工具列表
+        async function loadTools() {
+            try {
+                const mcpRes = await fetch(`${API_BASE}/mcp/tools`);
+                const result = await mcpRes.json();
+                
+                if (!result.success) {
+                    document.getElementById('mcp-list').innerHTML =
+                        '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                    return;
+                }
+                
+                const tools = result.data || {};
+
+                // 解析 MCP 工具
+                try {
+                    document.getElementById('mcp-list').innerHTML = (tools.tools || []).map(tool => `
+                        <div class="tool-card">
+                            <div class="tool-name">🔧 ${escapeHtml(tool.name)}</div>
+                            <div class="tool-desc">${escapeHtml(tool.description)}</div>
+                            <div class="tool-params">参数: ${escapeHtml((tool.parameters || []).join(', '))}</div>
+                            <div class="tool-example">${escapeHtml(tool.example || '')}</div>
+                        </div>
+                    `).join('');
+                } catch {
+                    document.getElementById('mcp-list').innerHTML = '<div class="empty-state">' + escapeHtml(JSON.stringify(tools)) + '</div>';
+                }
+            } catch (error) {
+                document.getElementById('mcp-list').innerHTML =
+                    '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        // 加载 Skills 列表
+        async function loadSkills() {
+            try {
+                const res = await fetch(`${API_SKILL_BASE}/skills/list`);
+                const result = await res.json();
+                
+                if (!result.success) {
+                    document.getElementById('skill-cards-list').innerHTML =
+                        '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                    return;
+                }
+                
+                const skills = result.data || [];
+
+                if (skills.length === 0) {
+                    document.getElementById('skill-cards-list').innerHTML =
+                        '<div class="empty-state">暂无可用的 Skills</div>';
+                    return;
+                }
+
+                document.getElementById('skill-cards-list').innerHTML = skills.map(skill => `
+                    <div class="skill-card">
+                        <div class="skill-header">
+                            <span class="skill-name">🎯 ${escapeHtml(skill.name)}</span>
+                            <span class="skill-trigger">触发词: ${escapeHtml(skill.trigger || '无')}</span>
+                        </div>
+                        <div class="skill-desc">${escapeHtml(skill.description || '')}</div>
+                        ${skill.steps && skill.steps.length > 0 ? `
+                            <div class="skill-steps">
+                                <div class="skill-steps-title">工作流程 (${skill.steps.length} 步)</div>
+                                ${skill.steps.slice(0, 3).map(step => `
+                                    <div class="skill-step-item">
+                                        ${step.order}. ${escapeHtml(step.name)} - 使用工具: ${escapeHtml(step.toolName)}
+                                    </div>
+                                `).join('')}
+                                ${skill.steps.length > 3 ? `<div class="skill-more">...还有 ${skill.steps.length - 3} 步</div>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('skill-cards-list').innerHTML =
+                    '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        // 重新加载 Skills
+        async function reloadSkillsAPI() {
+            try {
+                const res = await fetch(`${API_SKILL_BASE}/skills/reload`);
+                const result = await res.json();
+                if (result.success) {
+                    alert(result.message || 'Skills 已重新加载');
+                    loadSkills();
+                } else {
+                    alert('重新加载失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('重新加载失败: ' + error.message);
+            }
+        }
+
+        // 自动执行 Skill
+        async function executeSkillAuto() {
+            const userInput = document.getElementById('skill-auto-input').value;
+            const paramsStr = document.getElementById('skill-auto-params').value;
+            const responseBox = document.getElementById('skill-auto-response');
+
+            if (!userInput) {
+                alert('请输入问题描述');
+                return;
+            }
+
+            let params = {};
+            if (paramsStr) {
+                try {
+                    params = JSON.parse(paramsStr);
+                } catch {
+                    alert('参数 JSON 格式错误');
+                    return;
+                }
+            }
+
+            responseBox.innerHTML = '<div class="loading">⏳ 正在自动匹配并执行 Skill...</div>';
+            responseBox.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                const res = await fetch(`${API_SKILL_BASE}/skills/auto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input: userInput, params: params })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    responseBox.innerHTML = formatSkillResult(result.data);
+                } else {
+                    responseBox.innerHTML = '<div class="error">执行失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                }
+            } catch (error) {
+                responseBox.innerHTML = '<div class="error">执行失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        // 按名称执行 Skill
+        async function executeSkillByName() {
+            const skillName = document.getElementById('skill-name').value;
+            const paramsStr = document.getElementById('skill-params').value;
+            const responseBox = document.getElementById('skill-execute-response');
+
+            if (!skillName) {
+                alert('请输入 Skill 名称');
+                return;
+            }
+
+            let params = {};
+            if (paramsStr) {
+                try {
+                    params = JSON.parse(paramsStr);
+                } catch {
+                    alert('参数 JSON 格式错误');
+                    return;
+                }
+            }
+
+            responseBox.innerHTML = '<div class="loading">⏳ 正在执行 Skill: ' + escapeHtml(skillName) + '...</div>';
+            responseBox.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                const res = await fetch(`${API_SKILL_BASE}/skills/execute/${encodeURIComponent(skillName)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    responseBox.innerHTML = formatSkillResult(result.data);
+                } else {
+                    responseBox.innerHTML = '<div class="error">执行失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                }
+            } catch (error) {
+                responseBox.innerHTML = '<div class="error">执行失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        // 格式化 Skill 执行结果
+        function formatSkillResult(result) {
+            const success = result.success ? '✅ 成功' : '❌ 失败';
+            const duration = result.duration ? `${result.duration}ms` : '';
+            const skillName = result.skillName || 'unknown';
+
+            let html = `<div class="skill-result">
+                <div class="skill-result-header">
+                    <span class="skill-result-name">🎯 Skill: ${escapeHtml(skillName)}</span>
+                    <span class="skill-result-status">${success}</span>
+                    <span class="skill-result-duration">⏱️ ${duration}</span>
+                </div>`;
+
+            if (result.errorMessage) {
+                html += `<div class="skill-result-error">错误: ${escapeHtml(result.errorMessage)}</div>`;
+            }
+
+            if (result.stepResults && result.stepResults.length > 0) {
+                html += `<div class="skill-steps-result">
+                    <div class="skill-steps-result-title">执行步骤</div>`;
+                result.stepResults.forEach(step => {
+                    const stepStatus = step.success ? '✅' : '❌';
+                    html += `<div class="skill-step-result ${step.success ? 'success' : 'error'}">
+                        <div class="step-header">${stepStatus} 步骤 ${step.stepOrder}: ${escapeHtml(step.toolName)} (${step.duration}ms)</div>`;
+                    if (step.success) {
+                        let output = step.output || '';
+                        if (output.length > 200) output = output.substring(0, 200) + '...';
+                        html += `<div class="step-output">${escapeHtml(output)}</div>`;
+                    } else {
+                        html += `<div class="step-error">${escapeHtml(step.error || '')}</div>`;
+                    }
+                    html += '</div>';
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // 执行工具
+        async function executeTool() {
+            const toolName = document.getElementById('tool-name').value;
+            const argsStr = document.getElementById('tool-args').value;
+            const responseBox = document.getElementById('tool-response');
+            
+            if (!toolName) {
+                alert('请输入工具名称');
+                return;
+            }
+
+            let args = {};
+            if (argsStr) {
+                try {
+                    args = JSON.parse(argsStr);
+                } catch {
+                    responseBox.textContent = 'JSON 格式错误';
+                    responseBox.className = 'response-box error';
+                    return;
+                }
+            }
+
+            // 危险操作确认：删除文件需要用户确认
+            if (toolName === 'filesystem_delete') {
+                const filePath = args.path || '未知文件';
+                const confirmed = confirm(`⚠️ 危险操作确认\n\n您即将删除文件: ${filePath}\n\n此操作无法撤销，确定要继续吗？`);
+                if (!confirmed) {
+                    responseBox.textContent = '操作已取消';
+                    responseBox.className = 'response-box error';
+                    return;
+                }
+            }
+
+            responseBox.textContent = '执行中...';
+            responseBox.className = 'response-box';
+
+            try {
+                const response = await fetch(`${API_BASE}/mcp/execute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ toolName, arguments: args })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    responseBox.textContent = result.data || result.message;
+                    responseBox.className = 'response-box success';
+                } else {
+                    responseBox.textContent = '错误: ' + (result.message || '操作失败');
+                    responseBox.className = 'response-box error';
+                }
+            } catch (error) {
+                responseBox.textContent = '错误: ' + error.message;
+                responseBox.className = 'response-box error';
+            }
+        }
+
+        // 加载统计
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/rag/stats`);
+                const result = await response.json();
+                if (result.success) {
+                    const match = (result.data || '').match(/(\d+)/);
+                    document.getElementById('kb-count').textContent = match ? match[1] : '0';
+                }
+            } catch (error) {
+                console.error('加载统计失败:', error);
+            }
+        }
+
+        // 添加消息
+        function addMessage(role, content, containerId = 'chat-messages') {
+            const container = document.getElementById(containerId);
+            const avatar = role === 'user' ? '👤' : '🤖';
+            const html = `
+                <div class="message ${role}">
+                    <div class="avatar">${avatar}</div>
+                    <div class="message-content">${escapeHtml(content)}</div>
+                </div>
+            `;
+            container.innerHTML += html;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 回车键发送
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const activeTab = document.querySelector('.tab-content.active');
+                if (activeTab.id === 'chat') sendMessage();
+                else if (activeTab.id === 'auto') sendAutoMessage();
+                else if (activeTab.id === 'rag') sendRagMessage();
+                else if (activeTab.id === 'react') sendReactMessage();
+            }
+        });
+
+        // 初始化
+        loadStats();
+        loadPluginsInfo();
+
+        // ========== MCP 插件管理 ==========
+
+        function loadPluginsInfo() {
+            loadServersList();
+            loadPluginsStats();
+        }
+
+        async function loadPluginsStats() {
+            try {
+                const response = await fetch('/api/mcp/servers');
+                const result = await response.json();
+                const servers = result.success ? (result.data || []).servers || [] : [];
+                document.getElementById('server-count').textContent = servers.length || 0;
+                document.getElementById('plugin-count').textContent = servers.length > 0 ? '1' : '0';
+            } catch (error) {
+                console.error('加载插件统计失败:', error);
+            }
+        }
+
+        async function loadServersList() {
+            try {
+                const response = await fetch('/api/mcp/servers');
+                const result = await response.json();
+                const servers = result.success ? (result.data || []).servers || [] : [];
+                const list = document.getElementById('servers-list');
+
+                if (!result.success) {
+                    list.innerHTML = '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                    loadMcpToolsList();
+                    return;
+                }
+
+                if (!servers || servers.length === 0) {
+                    list.innerHTML = '<div class="empty-state">暂无注册的 Server</div>';
+                    loadMcpToolsList();
+                    return;
+                }
+
+                list.innerHTML = servers.map(server => `
+                    <div class="tool-card">
+                        <div class="tool-name">🖥️ ${escapeHtml(server.name || server)}</div>
+                        <div class="tool-desc">类型: ${escapeHtml(server.type || 'unknown')}</div>
+                        <div class="btn-row">
+                            <button class="btn btn-danger btn-sm" onclick="unregisterServer('${escapeHtml(server.name || server)}')">注销</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                loadMcpToolsList();
+            } catch (error) {
+                document.getElementById('servers-list').innerHTML =
+                    '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(error.message) + '</div>';
+                loadMcpToolsList();
+            }
+        }
+
+        async function loadMcpToolsList() {
+            try {
+                const response = await fetch('/api/mcp/tools');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    document.getElementById('mcp-tools-list').innerHTML =
+                        '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(result.message || '未知错误') + '</div>';
+                    return;
+                }
+                
+                const tools = (result.data || {}).tools || [];
+                const list = document.getElementById('mcp-tools-list');
+
+                if (!tools || tools.length === 0) {
+                    list.innerHTML = '<div class="empty-state">暂无可用工具，请先加载插件</div>';
+                    return;
+                }
+
+                list.innerHTML = tools.map(tool => {
+                    const inputSchema = tool.inputSchema || {};
+                    const properties = inputSchema.properties || {};
+                    const required = inputSchema.required || [];
+                    const params = Object.keys(properties).map(key => {
+                        const requiredMark = required.includes(key) ? ' *' : '';
+                        const desc = properties[key].description || '';
+                        return `${key}${requiredMark}${desc ? ' - ' + desc : ''}`;
+                    }).join('\n');
+
+                    return `
+                        <div class="tool-card">
+                            <div class="tool-name">🛠️ ${escapeHtml(tool.name)}</div>
+                            <div class="tool-desc">${escapeHtml(tool.description || '')}</div>
+                            ${params ? `<div class="tool-params">参数:\n${escapeHtml(params)}</div>` : ''}
+                            <button class="btn btn-primary btn-sm" onclick="useMcpTool('${escapeHtml(tool.name)}')">使用</button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                document.getElementById('mcp-tools-list').innerHTML =
+                    '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+
+        function useMcpTool(toolName) {
+            document.getElementById('mcp-tool-name').value = toolName;
+            document.getElementById('mcp-tool-args').focus();
+        }
+
+        async function loadPlugin() {
+            const jarPath = document.getElementById('plugin-jar-path').value.trim();
+            if (!jarPath) {
+                alert('请输入插件路径');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/mcp/plugins/load', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jarPath })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('插件加载成功！');
+                    loadPluginsInfo();
+                } else {
+                    alert('插件加载失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('加载失败: ' + error.message);
+            }
+        }
+
+        async function unloadPlugin() {
+            const jarPath = document.getElementById('plugin-jar-path').value.trim();
+            if (!jarPath) {
+                alert('请输入插件路径');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/mcp/plugins/${encodeURIComponent(jarPath)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('插件卸载成功！');
+                    loadPluginsInfo();
+                } else {
+                    alert('插件卸载失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('卸载失败: ' + error.message);
+            }
+        }
+
+        async function refreshPlugins() {
+            loadPluginsInfo();
+            alert('刷新成功！');
+        }
+
+        async function unregisterServer(serverName) {
+            if (!confirm(`确定要注销 Server "${serverName}" 吗？`)) return;
+
+            try {
+                const response = await fetch(`/api/mcp/servers/${encodeURIComponent(serverName)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Server 注销成功！');
+                    loadPluginsInfo();
+                } else {
+                    alert('注销失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('注销失败: ' + error.message);
+            }
+        }
+
+        async function executeMcpTool() {
+            const toolName = document.getElementById('mcp-tool-name').value.trim();
+            const argsText = document.getElementById('mcp-tool-args').value.trim();
+            const responseBox = document.getElementById('mcp-tool-response');
+
+            if (!toolName) {
+                alert('请输入工具名称');
+                return;
+            }
+
+            let args = {};
+            if (argsText) {
+                try {
+                    args = JSON.parse(argsText);
+                } catch (e) {
+                    alert('参数 JSON 格式错误');
+                    return;
+                }
+            }
+
+            responseBox.textContent = '正在执行...';
+            responseBox.className = 'response-box';
+
+            try {
+                const response = await fetch(`/api/mcp/tools/${encodeURIComponent(toolName)}/execute`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(args)
+                });
+                const result = await response.json();
+
+                if (!result.success) {
+                    responseBox.textContent = '错误: ' + (result.message || result.content || '未知错误');
+                    responseBox.className = 'response-box error';
+                } else {
+                    responseBox.textContent = result.content || '执行成功，无返回内容';
+                    responseBox.className = 'response-box success';
+                }
+            } catch (error) {
+                responseBox.textContent = '执行失败: ' + error.message;
+                responseBox.className = 'response-box error';
+            }
+        }
+
+        // ========== 插件治理功能 ==========
+        
+        async function loadGovernancePlugins() {
+            try {
+                const response = await fetch('/api/plugin-governance/list?includeDisabled=true');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || '加载失败');
+                }
+                
+                const data = result.data || {};
+                const plugins = data.plugins || [];
+                const stats = data.stats || {};
+                
+                document.getElementById('governance-active').textContent = stats.active || 0;
+                document.getElementById('governance-disabled').textContent = stats.disabled || 0;
+                document.getElementById('governance-total').textContent = stats.total || 0;
+                
+                const list = document.getElementById('governance-plugins-list');
+                
+                if (!plugins || plugins.length === 0) {
+                    list.innerHTML = '<div class="empty-state">暂无插件</div>';
+                    return;
+                }
+                
+                list.innerHTML = plugins.map(plugin => {
+                    const statusColor = plugin.status === 'ACTIVE' ? '#28a745' : 
+                                       plugin.status === 'DISABLED' ? '#dc3545' : 
+                                       plugin.status === 'ERROR' ? '#ffc107' : '#6c757d';
+                    const statusText = plugin.status || 'UNKNOWN';
+                    
+                    return `
+                        <div class="tool-card" style="border-left: 4px solid ${statusColor};">
+                            <div class="tool-name" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>🔌 ${escapeHtml(plugin.name)}</span>
+                                <span style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: ${statusColor}20; color: ${statusColor};">${statusText}</span>
+                            </div>
+                            <div class="tool-desc">
+                                <strong>版本:</strong> ${escapeHtml(plugin.version || 'N/A')}<br>
+                                <strong>作者:</strong> ${escapeHtml(plugin.author || 'N/A')}<br>
+                                ${plugin.description ? escapeHtml(plugin.description) : ''}
+                            </div>
+                            ${plugin.serverNames && plugin.serverNames.length > 0 ? 
+                                `<div class="tool-params">Servers: ${plugin.serverNames.map(s => escapeHtml(s)).join(', ')}</div>` : ''}
+                            <div class="btn-row">
+                                ${plugin.status === 'ACTIVE' ? 
+                                    `<button class="btn btn-danger btn-sm" onclick="disablePlugin('${escapeHtml(plugin.id)}')">禁用</button>` :
+                                    `<button class="btn btn-success btn-sm" onclick="enablePlugin('${escapeHtml(plugin.id)}')">启用</button>`
+                                }
+                                <button class="btn btn-primary btn-sm" onclick="checkPluginCompatibility('${escapeHtml(plugin.id)}', '${escapeHtml(plugin.version)}')">检查兼容性</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                document.getElementById('governance-plugins-list').innerHTML = 
+                    '<div class="empty-state" style="color: #dc3545;">加载失败: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+        
+        async function enablePlugin(pluginId) {
+            try {
+                const response = await fetch(`/api/plugin-governance/enable/${encodeURIComponent(pluginId)}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('插件已启用');
+                    loadGovernancePlugins();
+                } else {
+                    alert('启用失败: ' + result.message);
+                }
+            } catch (error) {
+                alert('启用失败: ' + error.message);
+            }
+        }
+        
+        async function disablePlugin(pluginId) {
+            if (!confirm('确定要禁用此插件吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/plugin-governance/disable/${encodeURIComponent(pluginId)}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('插件已禁用');
+                    loadGovernancePlugins();
+                } else {
+                    alert('禁用失败: ' + result.message);
+                }
+            } catch (error) {
+                alert('禁用失败: ' + error.message);
+            }
+        }
+        
+        async function checkPluginCompatibility(pluginId, version) {
+            try {
+                const response = await fetch(`/api/plugin-governance/check/${encodeURIComponent(pluginId)}/${encodeURIComponent(version)}`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || '检查失败');
+                }
+                
+                const data = result.data || {};
+                alert(`插件 ${data.pluginId} 版本 ${data.requestedVersion} 兼容性: ${data.compatible ? '兼容' : '不兼容'}`);
+            } catch (error) {
+                alert('检查失败: ' + error.message);
+            }
+        }
+        
+        async function compareVersions() {
+            const v1 = document.getElementById('version-1').value.trim();
+            const v2 = document.getElementById('version-2').value.trim();
+            const resultBox = document.getElementById('version-compare-result');
+            
+            if (!v1 || !v2) {
+                resultBox.textContent = '请输入两个版本号';
+                resultBox.className = 'response-box error';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/plugin-governance/compare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ v1, v2 })
+                });
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || '比较失败');
+                }
+                
+                const data = result.data || {};
+                resultBox.textContent = `${data.v1} ${data.comparison} ${data.v2}`;
+                resultBox.className = 'response-box success';
+            } catch (error) {
+                resultBox.textContent = '比较失败: ' + error.message;
+                resultBox.className = 'response-box error';
+            }
+        }
+        
+        function loadSelectedPlugin() {
+            const select = document.getElementById('plugin-jar-select');
+            const jarPath = select.value;
+            
+            if (!jarPath) {
+                alert('请选择一个插件！');
+                return;
+            }
+            
+            if (confirm(`确定要加载插件: ${select.options[select.selectedIndex].text} ?`)) {
+                loadPluginByPath(jarPath);
+            }
+        }
+        
+        async function loadPluginByPath(jarPath) {
+            try {
+                const response = await fetch('/api/mcp/plugins/load', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jarPath })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('插件加载成功！');
+                    loadGovernancePlugins();
+                    loadPluginsInfo();
+                } else {
+                    alert('插件加载失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('加载失败: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

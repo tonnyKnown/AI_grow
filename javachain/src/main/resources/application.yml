@@ -1,0 +1,88 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: javachain-agent  # Agent 服务名称
+  # Nacos 服务发现
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        username: nacos
+        password: nOn2h1l8cHSG
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        username: nacos
+        password: nOn2h1l8cHSG
+  # MySQL 数据库配置 (用于 MCP 服务)
+  datasource:
+    mysql:
+      host: ${MYSQL_HOST:localhost}
+      port: ${MYSQL_PORT:3306}
+      database: ${MYSQL_DATABASE:example_db}
+      username: ${MYSQL_USERNAME:root}
+      password: ${MYSQL_PASSWORD:your_actual_password}
+
+  # Redis 配置 (用于 MCP 缓存)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+# LLM 配置（统一配置，支持切换 Provider）
+# 使用说明：
+# 1. deepseek: 云端 DeepSeek API
+# 2. ollama: 本地 Ollama 模型
+javachain:
+  llm:
+    # 当前使用的 Provider：deepseek 或 ollama
+    provider: ${JAVACHAIN_LLM_PROVIDER:deepseek}
+
+    # DeepSeek 云端配置
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com/v1}
+#      chat-model: deepseek-chat
+      chat-model:  deepseek-v4-flash
+
+    # Ollama 本地配置
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      model: ${OLLAMA_MODEL:deepseek-r1:7b}
+      temperature: 0.2
+      timeout: 120s
+
+# 阿里云 DashScope 配置（用于 Embeddings 向量化）
+dashscope:
+  api:
+    key: ${DASHSCOPE_API_KEY:}
+    embedding-model: text-embedding-v1
+
+
+# 向量存储配置 - 使用内存向量库（无需外部数据库）
+vector-store:
+  type: memory
+
+logging:
+  level:
+    com.example.javachain: DEBUG
+    dev.langchain4j: INFO
+    com.alibaba.nacos: DEBUG
+
+# MCP 插件配置
+mcp:
+  plugin-dir: ./plugins
+  auto-load: false  # 暂时禁用，等类加载器问题解决后再开启
