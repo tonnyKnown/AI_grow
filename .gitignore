@@ -29,3 +29,7 @@ Thumbs.db
 
 # ---- General ----
 *.tmp
+
+# ---- javachain ----
+javachain/temp/
+javachain/tempFile/
