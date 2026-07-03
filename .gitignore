@@ -29,7 +29,13 @@ Thumbs.db
 
 # ---- General ----
 *.tmp
+.env
+*.env.local
+application-local.yml
 
 # ---- javachain ----
 javachain/temp/
 javachain/tempFile/
+javachain/.env
+javachain/*.env.local
+javachain/application-local.yml

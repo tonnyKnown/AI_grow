@@ -1,4 +1,12 @@
 spring:
+  config:
+    import:
+      - optional:file:./.env[.properties]
+      - optional:file:./javachain/.env[.properties]
+      - optional:file:../.env[.properties]
+      - optional:file:./application.yml
+      - optional:file:./javachain/application.yml
+      - optional:file:../application.yml
   application:
     name: javachain
   cloud:
@@ -7,10 +15,10 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:public}
         username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
+        password: ${NACOS_PASSWORD:}
       config:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:public}
         username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
+        password: ${NACOS_PASSWORD:}
         file-extension: yml
