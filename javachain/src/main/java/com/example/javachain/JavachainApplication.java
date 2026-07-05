@@ -21,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class JavachainApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(JavachainApplication.class, args);
     }
 }
