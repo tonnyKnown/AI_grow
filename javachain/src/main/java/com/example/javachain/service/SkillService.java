@@ -105,7 +105,7 @@ public class SkillService {
 
     @Tool("查询知识库信息,参数：question(问题)")
     public String queryKnowledgeBase(String question) {
-        String response = ragService.query(question);
+        String response =   ragService.query(question);
         log.debug("生成 response: {}", response);
         return response;
     }

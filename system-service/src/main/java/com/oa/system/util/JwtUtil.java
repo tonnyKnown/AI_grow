@@ -26,10 +26,7 @@ public class JwtUtil {
     }
     private static final Pattern SELECT_ONLY_PATTERN = Pattern.compile("[;&|${}]");
 
-    public static void main(String[] args) {
-        System.out.println(SELECT_ONLY_PATTERN.matcher("SELECT * FROM sys_order WHERE user_id = 1 AND create_time >= '2026-04-30 18:50:55' AND create_time <= '2026-05-30 18:50:55'").matches());
 
-    }
     public String generateToken(Long userId, String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);

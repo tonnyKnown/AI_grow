@@ -97,8 +97,13 @@
             <el-select v-model="form.status" placeholder="请选择新状态" style="width: 100%">
               <el-option label="待发货" :value="1" />
               <el-option label="已发货" :value="2" />
-              <el-option label="已完成" :value="3" />
-              <el-option label="已取消" :value="4" />
+              <el-option label="配送中" :value="3" />
+              <el-option label="已收货" :value="4" />
+              <el-option label="已完成" :value="5" />
+              <el-option label="已取消" :value="6" />
+              <el-option label="退货中" :value="7" />
+              <el-option label="已退货" :value="8" />
+              <el-option label="已退款" :value="9" />
             </el-select>
           </el-form-item>
         </el-form>
@@ -220,8 +225,13 @@ const getStatusText = (status) => {
   const texts = {
     1: '待发货',
     2: '已发货',
-    3: '已完成',
-    4: '已取消'
+    3: '配送中',
+    4: '已收货',
+    5: '已完成',
+    6: '已取消',
+    7: '退货中',
+    8: '已退货',
+    9: '已退款'
   }
   return texts[status] || '未知'
 }

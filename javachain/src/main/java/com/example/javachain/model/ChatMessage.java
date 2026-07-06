@@ -30,5 +30,5 @@ public class ChatMessage {
      * 时间戳
      */
     @Builder.Default
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private LocalDateTime time = LocalDateTime.now();
 }

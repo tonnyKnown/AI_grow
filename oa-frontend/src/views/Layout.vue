@@ -67,7 +67,7 @@
           <router-view></router-view>
         </el-main>
         <el-footer class="footer">
-          <span>OA系统 © 2024</span>
+          <span>OA系统 © 2026</span>
         </el-footer>
       </el-container>
     </el-container>
