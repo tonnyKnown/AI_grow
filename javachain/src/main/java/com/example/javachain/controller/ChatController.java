@@ -5,6 +5,7 @@ import com.example.javachain.model.ChatMessage;
 import com.example.javachain.service.ChatHistoryService;
 import com.example.javachain.service.ChatService;
 import com.example.javachain.service.FileVectorService;
+import com.example.javachain.service.IntelligentChatService;
 import com.example.javachain.service.McpService;
 import com.example.javachain.service.RagService;
 import com.example.javachain.service.SkillService;
@@ -26,6 +27,7 @@ public class ChatController {
     private final ChatHistoryService chatHistoryService;
     private final RagService ragService;
     private final SkillService skillService;
+    private final IntelligentChatService intelligentChatService;
     private final McpService mcpService;
     private final FileVectorService fileVectorService;
     private final ToolAgentService toolAgentService;
@@ -33,6 +35,7 @@ public class ChatController {
 
     public ChatController(ChatService chatService, ChatHistoryService chatHistoryService,
                          RagService ragService, SkillService skillService,
+                         IntelligentChatService intelligentChatService,
                          McpService mcpService, FileVectorService fileVectorService,
                          ToolAgentService toolAgentService,
                          WeatherAgentClient weatherAgentClient) {
@@ -40,6 +43,7 @@ public class ChatController {
         this.chatHistoryService = chatHistoryService;
         this.ragService = ragService;
         this.skillService = skillService;
+        this.intelligentChatService = intelligentChatService;
         this.mcpService = mcpService;
         this.fileVectorService = fileVectorService;
         this.toolAgentService = toolAgentService;
@@ -105,7 +109,7 @@ public class ChatController {
             sessionId = chatHistoryService.createSession();
         }
         
-        String response = chatService.chatWithHistory(sessionId, message);
+        String response = intelligentChatService.chatWithHistory(sessionId, message);
         return ApiResult.success(response);
     }
 

@@ -43,6 +43,7 @@ export const javachainApi = {
     return request({
       url: '/javachain/chat/simple/with-history',
       method: 'post',
+      timeout: 30000,
       data: { sessionId, message }
     })
   },

@@ -11,7 +11,7 @@ spring:
       - optional:file:./javachain/application.yml
       - optional:file:../application.yml
   application:
-    name: javachain-agent  # Agent 服务名称
+    name: javachain  # Agent 服务名称
   # Nacos 服务发现
   cloud:
     compatibility-verifier:
@@ -21,12 +21,12 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:public}
         username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:}
+        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
       config:
         server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
         namespace: ${NACOS_NAMESPACE:public}
         username: ${NACOS_USERNAME:nacos}
-        password: ${NACOS_PASSWORD:}
+        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
   # MySQL 数据库配置 (用于 MCP 服务)
   datasource:
     mysql:
@@ -79,6 +79,9 @@ dashscope:
     key: ${DASHSCOPE_API_KEY:}
     embedding-model: text-embedding-v1
 
+jwt:
+  secret: ${JWT_SECRET:oa-system-jwt-secret-key-2024-for-secure-authentication-very-long-enough}
+
 
 # 向量存储配置 - 使用内存向量库（无需外部数据库）
 vector-store:
@@ -92,5 +95,8 @@ logging:
 
 # MCP 插件配置
 mcp:
+  target-service: ${MCP_TARGET_SERVICE:mysql-mcp-server}
+  sse-endpoint: ${MCP_SSE_ENDPOINT:/mcp/sse}
+  fallback-base-url: ${MCP_FALLBACK_BASE_URL:http://127.0.0.1:8083}
   plugin-dir: ./plugins
   auto-load: false  # 暂时禁用，等类加载器问题解决后再开启

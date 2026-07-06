@@ -9,7 +9,7 @@
           </svg>
         </div>
         <div class="info">
-          <h3>智能客服</h3>
+          <h3>知识百科</h3>
           <span class="status online">在线</span>
         </div>
       </div>
@@ -20,7 +20,7 @@
       <div class="welcome-message">
         <div class="bot-avatar">🤖</div>
         <div class="message-content">
-          <p>您好！我是智能客服小助手，很高兴为您服务！</p>
+          <p>您好！我是知识百科小助手，很高兴为您服务！</p>
           <p>请问有什么可以帮助您的吗？</p>
         </div>
       </div>

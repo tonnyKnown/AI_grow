@@ -1,74 +1,93 @@
 import request from '../utils/request'
 
+const normalizeMessage = (msg) => ({
+    role: msg.role,
+    content: msg.content,
+    created_at: msg.created_at || msg.timestamp
+})
+
 export const chatApi = {
-    sendMessage: (message) => {
+    sendMessage: (message, sessionId = 'chat_') => {
         return request({
-            url: '/business//chat/send',
+            url: '/javachain/chat/simple/with-history',
             method: 'post',
+            timeout: 30000,
             data: {
+                sessionId,
                 message
             }
-        })
+        }).then(response => ({
+            data: {
+                reply: response.data,
+                sessionId
+            }
+        }))
     },
-    
+
     sendKnowledgeMessage: (data) => {
+        const sessionId = data.sessionId || data.session_id
         return request({
-            url: '/business/chat/chatRobot',
+            url: '/javachain/chat/simple/with-history',
             method: 'post',
-            data: data
-        })
+            timeout: 30000,
+            data: {
+                sessionId,
+                message: data.message
+            }
+        }).then(response => ({
+            data: {
+                reply: response.data,
+                sessionId
+            }
+        }))
     },
-    
+
     getChatHistory: (sessionId, limit) => {
         return request({
-            url: `/business/chat/history/${sessionId}`,
-            method: 'get',
-            params: {
-                limit: limit || 10
+            url: `/javachain/chat/session/${sessionId}/history`,
+            method: 'get'
+        }).then(response => {
+            const messages = Array.isArray(response.data) ? response.data : []
+            const limitedMessages = limit ? messages.slice(-limit) : messages
+            return {
+                data: {
+                    sessionId,
+                    messages: limitedMessages.map(normalizeMessage)
+                }
             }
         })
     },
-    
-    getUserSessions: (userId, botType) => {
-        return request({
-            url: `/business/chat/sessions/${userId}`,
-            method: 'get',
-            params: {
-                bot_type: botType
-            }
+
+    getUserSessions: () => {
+        return Promise.resolve({
+            data: []
         })
     },
-    
+
     clearSession: (sessionId) => {
         return request({
-            url: '/business/chat/session/clear',
-            method: 'post',
-            data: {
-                session_id: sessionId
-            }
+            url: `/javachain/chat/session/${sessionId}/clear`,
+            method: 'post'
         })
     },
-    
+
     deleteSession: (sessionId) => {
         return request({
-            url: `/business/chat/session/${sessionId}`,
+            url: `/javachain/chat/session/${sessionId}`,
             method: 'delete'
         })
     },
-    
+
     getHistory: (sessionId) => {
         return request({
-            url: '/business//chat/history',
-            method: 'get',
-            params: {
-                sessionId
-            }
+            url: `/javachain/chat/session/${sessionId}/history`,
+            method: 'get'
         })
     },
-    
+
     createSession: () => {
         return request({
-            url: '/business//chat/session',
+            url: '/javachain/chat/session/create',
             method: 'post'
         })
     }

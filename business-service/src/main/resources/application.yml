@@ -56,13 +56,6 @@ wechat:
 #      log-retention-days: 30
 #    access-token: xxl-job-token
 
-# 本地LLM配置
-openai:
-  api-key: local
-  api-url: http://localhost:8000/v1
-  model: local-llm
-  timeout: 30000
-
 # JWT配置
 jwt:
   secret: oa-system-jwt-secret-key-2024-for-secure-authentication-very-long-enough
