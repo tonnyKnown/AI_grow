@@ -1,30 +1,33 @@
 package com.example.javachain.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * MCP 客户端配置
- * 
- * 配置 MCP Client 自动发现和调用远程 MCP 服务
- */
+@Slf4j
 @Configuration
 public class McpClientConfig {
 
-    @Value("${nacos.server-addr:127.0.0.1:8848}")
+    @Value("${spring.cloud.nacos.discovery.server-addr:${nacos.server-addr:127.0.0.1:8848}}")
     private String nacosServerAddr;
 
-    @Value("${nacos.namespace:public}")
+    @Value("${spring.cloud.nacos.discovery.namespace:${nacos.namespace:public}}")
     private String namespace;
 
-    /**
-     * 创建 WebClient 用于调用 Nacos API
-     */
+    @Value("${spring.cloud.nacos.discovery.username:${nacos.username:nacos}}")
+    private String username;
+
+    @Value("${spring.cloud.nacos.discovery.password:${nacos.password:}}")
+    private String password;
+
     @Bean
     public WebClient nacosApiWebClient() {
         return WebClient.builder()
@@ -33,90 +36,85 @@ public class McpClientConfig {
                 .build();
     }
 
-    /**
-     * MCP 服务发现器
-     * 
-     * 从 Nacos MCP Registry 获取已注册的 MCP 服务列表
-     */
     @Bean
-    public McpServiceDiscoverer mcpServiceDiscoverer(WebClient nacosApiWebClient) {
-        return new McpServiceDiscoverer(nacosApiWebClient, namespace);
+    public McpServiceDiscoverer mcpServiceDiscoverer(WebClient nacosApiWebClient, ObjectMapper objectMapper) {
+        return new McpServiceDiscoverer(nacosApiWebClient, objectMapper, namespace, username, password);
     }
 
-    /**
-     * MCP 服务发现器 - 从 Nacos 获取 MCP 服务列表
-     */
     public static class McpServiceDiscoverer {
 
         private final WebClient webClient;
+        private final ObjectMapper objectMapper;
         private final String namespace;
+        private final String username;
+        private final String password;
 
-        public McpServiceDiscoverer(WebClient webClient, String namespace) {
+        public McpServiceDiscoverer(WebClient webClient, ObjectMapper objectMapper,
+                                    String namespace, String username, String password) {
             this.webClient = webClient;
+            this.objectMapper = objectMapper;
             this.namespace = namespace;
+            this.username = username;
+            this.password = password;
         }
 
-        /**
-         * 发现所有已注册的 MCP 服务
-         * 
-         * @return MCP 服务信息列表
-         */
         public List<McpServerEndpoint> discoverMcpServers() {
             try {
-                // 调用 Nacos AI MCP Registry API
                 String response = webClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/nacos/v3/admin/ai/mcp/list")
                                 .queryParam("namespaceId", namespace)
+                                .queryParam("username", username)
+                                .queryParam("password", password)
                                 .build())
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
 
-                // TODO: 解析响应并返回 MCP 服务端点列表
-                // 实际实现需要根据 Nacos API 返回格式解析
-                return List.of();
+                JsonNode root = objectMapper.readTree(response);
+                if (root.path("code").asInt(-1) != 0) {
+                    log.warn("Nacos MCP registry returned non-success response: {}", response);
+                    return List.of();
+                }
+
+                JsonNode items = root.path("data").path("pageItems");
+                if (!items.isArray()) {
+                    return List.of();
+                }
+
+                List<McpServerEndpoint> endpoints = new ArrayList<>();
+                for (JsonNode item : items) {
+                    endpoints.add(new McpServerEndpoint(
+                            item.path("name").asText(),
+                            item.path("version").asText(),
+                            item.path("protocol").asText(),
+                            item.path("description").asText(),
+                            item.path("enabled").asBoolean(false),
+                            item.path("status").asText()
+                    ));
+                }
+                return endpoints;
             } catch (Exception e) {
-                System.err.println("发现 MCP 服务失败: " + e.getMessage());
+                log.warn("Failed to discover MCP services from Nacos registry: {}", e.getMessage());
                 return List.of();
             }
         }
 
-        /**
-         * 发现指定 MCP 服务的 SSE 端点
-         * 
-         * @param serviceName MCP 服务名称
-         * @return SSE 端点 URL
-         */
-        public String discoverSseEndpoint(String serviceName) {
-            try {
-                String response = webClient.get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path("/nacos/v3/admin/ai/mcp/detail")
-                                .queryParam("namespaceId", namespace)
-                                .queryParam("serviceName", serviceName)
-                                .build())
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
-
-                // TODO: 解析响应获取 SSE 端点
-                // 实际实现需要根据 Nacos API 返回格式解析
-                return null;
-            } catch (Exception e) {
-                System.err.println("发现 MCP 服务端点失败: " + e.getMessage());
-                return null;
-            }
+        public boolean isRegistered(String serviceName) {
+            return discoverMcpServers().stream()
+                    .anyMatch(server -> serviceName.equals(server.serviceName())
+                            && server.enabled()
+                            && "active".equalsIgnoreCase(server.status()));
         }
     }
 
-    /**
-     * MCP 服务端点信息
-     */
     public record McpServerEndpoint(
             String serviceName,
             String version,
-            String sseEndpoint,
-            List<String> tools
-    ) {}
+            String protocol,
+            String description,
+            boolean enabled,
+            String status
+    ) {
+    }
 }

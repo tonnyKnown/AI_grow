@@ -1,17 +1,30 @@
 package com.example.javachain.service;
 
 import dev.langchain4j.agent.tool.Tool;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,7 +49,13 @@ public class SkillService {
     private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     @Resource
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Value("${jwt.secret:oa-system-jwt-secret-key-2024-for-secure-authentication-very-long-enough}")
+    private String jwtSecret;
+
     private RagService ragService;    // ==================== 时间相关工具 ====================
+
 
     @Tool("获取当前系统时间，格式：yyyy-MM-dd HH:mm:ss")
     public String getCurrentTime() {
@@ -91,72 +110,60 @@ public class SkillService {
         return response;
     }
 
-
-
-    // ==================== 辅助方法 ====================
-
-
-    /**
-     * 获取可用技能列表（旧方法，保留向后兼容）
-     */
-    public String getAvailableSkills() {
-        List<Map<String, Object>> skills = new ArrayList<>();
-
-        Map<String, Object> skill1 = new HashMap<>();
-        skill1.put("name", "getCurrentTime");
-        skill1.put("description", "获取当前系统时间");
-        skill1.put("parameters", new ArrayList<>());
-        skill1.put("example", "调用 getCurrentTime() 获取当前时间");
-        skills.add(skill1);
-
-        Map<String, Object> skill2 = new HashMap<>();
-        skill2.put("name", "generateRandomNumber");
-        skill2.put("description", "生成指定范围内的随机整数");
-        skill2.put("parameters", List.of("min (int)", "max (int)"));
-        skill2.put("example", "调用 generateRandomNumber(1, 100)");
-        skills.add(skill2);
-
-        Map<String, Object> skill3 = new HashMap<>();
-        skill3.put("name", "reverseString");
-        skill3.put("description", "反转字符串");
-        skill3.put("parameters", List.of("text (String)"));
-        skill3.put("example", "调用 reverseString(\"hello\")");
-        skills.add(skill3);
-
-        Map<String, Object> skill4 = new HashMap<>();
-        skill4.put("name", "addNumbers");
-        skill4.put("description", "计算两个数的和");
-        skill4.put("parameters", List.of("a (int)", "b (int)"));
-        skill4.put("example", "调用 addNumbers(1, 2)");
-        skills.add(skill4);
-
-        return toJson(skills);
-    }
-
-
-    private String toJson(List<Map<String, Object>> skills) {
-        StringBuilder json = new StringBuilder("[\n");
-        for (int i = 0; i < skills.size(); i++) {
-            Map<String, Object> skill = skills.get(i);
-            json.append("  {\n");
-            json.append("    \"name\": \"").append(skill.get("name")).append("\",\n");
-            json.append("    \"description\": \"").append(skill.get("description")).append("\",\n");
-
-            @SuppressWarnings("unchecked")
-            List<String> params = (List<String>) skill.get("parameters");
-            json.append("    \"parameters\": [");
-            for (int j = 0; j < params.size(); j++) {
-                json.append("\"").append(params.get(j)).append("\"");
-                if (j < params.size() - 1) json.append(", ");
+    @Tool("根据 JWT token 获取当前登录用户信息，参数：token，支持 Bearer 前缀或纯 token")
+    public String getCurrentUserFromToken() {
+        try {
+           String token = resolveToken();
+            if (token == null || token.isBlank()) {
+                return "解析失败：token 不能为空";
             }
-            json.append("],\n");
-
-            json.append("    \"example\": \"").append(skill.get("example")).append("\"\n");
-            json.append("  }");
-            if (i < skills.size() - 1) json.append(",");
-            json.append("\n");
+            Claims claims = parseClaims(token);
+            Map<String, Object> userInfo = new LinkedHashMap<>();
+            userInfo.put("userId", claims.get("userId"));
+            userInfo.put("username", claims.getSubject());
+            userInfo.put("subject", claims.getSubject());
+            userInfo.put("issuedAt", claims.getIssuedAt());
+            userInfo.put("expiration", claims.getExpiration());
+            userInfo.put("claims", new LinkedHashMap<>(claims));
+            return objectMapper.writeValueAsString(userInfo);
+        } catch (Exception e) {
+            log.warn("Failed to parse JWT token for current user: {}", e.getMessage());
+            return "解析失败：" + e.getMessage();
         }
-        json.append("]");
-        return json.toString();
     }
+
+    private String resolveToken() {
+        HttpServletRequest request = getCurrentRequest();
+        if (request == null) {
+            return null;
+        }
+        return request.getHeader(HttpHeaders.AUTHORIZATION);
+    }
+
+
+
+    private HttpServletRequest getCurrentRequest() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof ServletRequestAttributes servletRequestAttributes) {
+            return servletRequestAttributes.getRequest();
+        }
+        return null;
+    }
+
+    private Claims parseClaims(String token) {
+        String cleanToken = token.trim();
+        if (cleanToken.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            cleanToken = cleanToken.substring(7).trim();
+        }
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(cleanToken)
+                .getPayload();
+    }
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
 }
