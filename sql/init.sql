@@ -87,8 +87,8 @@ CREATE TABLE `sys_menu` (
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `remark` varchar(500) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
-INSERT INTO `sys_menu` (`id`, `menu_name`, `path`, `component`, `icon`, `parent_id`, `order_num`, `role_keys`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1,'首页','/dashboard','Layout.vue','HomeFilled',NULL,1,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:16:40','首页入口'),(2,'系统管理','/system','','Setting',NULL,2,'admin',1,'1','2026-05-10 00:47:07',NULL,'2026-05-10 01:17:23','系统管理目录'),(3,'用户管理','/system/users','@/views/UserManagement.vue','User',2,1,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:40',''),(4,'角色管理','/system/roles','@/views/RoleManagement.vue','UserFilled',2,2,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:44',''),(5,'权限管理','/system/permissions','@/views/PermissionManagement.vue','Lock',2,3,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:47',''),(6,'菜单管理','/system/menus','@/views/MenuManagement.vue','Menu',2,4,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:50',''),(7,'业务管理','/business','','Goods',NULL,3,'admin,user',1,'1','2026-05-10 00:47:07',NULL,'2026-05-10 01:17:58','业务管理目录'),(8,'商品管理','/business/products','@/views/ProductManagement.vue','Goods',7,1,'admin,user',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:13:23',''),(9,'订单管理','/business/orders','@/views/OrderManagement.vue','Document',7,2,'admin,user',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:13:28',''),(10,'营销推广','/business/marketing','@/views/MarketingManagement.vue','',7,3,'admin,user',1,'1','2026-05-10 17:45:43','1','2026-05-23 10:13:32',''),(11,'知识百科智能','/business/chat','@/views/ChatBot.vue','',7,4,'admin,user',1,'1','2026-05-13 18:11:07','1','2026-05-23 10:13:38',NULL),(12,'公司业务助手','/business/knowledge','@/views/KnowledgeBot.vue','',7,5,'admin,user',1,'1','2026-05-20 02:10:37','1','2026-05-23 10:13:42',NULL),(13,'智能体','/business/javachain','@/views/JavaChain.vue','',7,6,'admin,user',1,'1','2026-06-01 20:57:20',NULL,NULL,NULL);
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
+INSERT INTO `sys_menu` (`id`, `menu_name`, `path`, `component`, `icon`, `parent_id`, `order_num`, `role_keys`, `status`, `create_by`, `create_time`, `update_by`, `update_time`, `remark`) VALUES (1,'首页','/dashboard','Layout.vue','HomeFilled',NULL,1,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:16:40','首页入口'),(2,'系统管理','/system','','Setting',NULL,2,'admin',1,'1','2026-05-10 00:47:07',NULL,'2026-05-10 01:17:23','系统管理目录'),(3,'用户管理','/system/users','@/views/UserManagement.vue','User',2,1,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:40',''),(4,'角色管理','/system/roles','@/views/RoleManagement.vue','UserFilled',2,2,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:44',''),(5,'权限管理','/system/permissions','@/views/PermissionManagement.vue','Lock',2,3,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:47',''),(6,'菜单管理','/system/menus','@/views/MenuManagement.vue','Menu',2,4,'admin',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:12:50',''),(7,'业务管理','/business','','Goods',NULL,3,'admin,user',1,'1','2026-05-10 00:47:07',NULL,'2026-05-10 01:17:58','业务管理目录'),(8,'商品管理','/business/products','@/views/ProductManagement.vue','Goods',7,1,'admin,user',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:13:23',''),(9,'订单管理','/business/orders','@/views/OrderManagement.vue','Document',7,2,'admin,user',1,'1','2026-05-10 00:47:07','1','2026-05-23 10:13:28',''),(10,'营销推广','/business/marketing','@/views/MarketingManagement.vue','',7,3,'admin,user',1,'1','2026-05-10 17:45:43','1','2026-05-23 10:13:32',''),(11,'知识百科智能','/business/chat','@/views/ChatBot.vue','',7,4,'admin,user',1,'1','2026-05-13 18:11:07','1','2026-05-23 10:13:38',NULL),(12,'公司业务助手','/business/knowledge','@/views/KnowledgeBot.vue','',7,5,'admin,user',1,'1','2026-05-20 02:10:37','1','2026-05-23 10:13:42',NULL),(13,'智能体','/business/javachain','@/views/JavaChain.vue','',7,6,'admin,user',1,'1','2026-06-01 20:57:20',NULL,NULL,NULL),(14,'物流管理','/business/logistics','@/views/LogisticsManagement.vue','Van',7,7,'admin,user',1,'1','2026-07-13 00:00:00',NULL,NULL,NULL);
 
 -- 用户角色关系表
 
@@ -182,6 +182,31 @@ CREATE TABLE `sys_order` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
 INSERT INTO `sys_order` (`id`, `order_no`, `user_id`, `product_id`, `product_name`, `quantity`, `unit_price`, `total_amount`, `status`, `shipping_address`, `receiver_name`, `receiver_phone`, `remark`, `create_by`, `create_time`, `update_by`, `update_time`) VALUES (1,'ORD177833578742647DC3456',1,1,'鞋子',1,5.00,5.00,3,'东莞','段门兴','18098983413','测试',1,'2026-05-09 22:09:47',1,'2026-05-09 22:27:25'),(3,'ORD17783475235488364702C',1,2,'外套',1,4.00,4.00,2,'深证','王五','18098983413','21312',1,'2026-05-10 01:25:24',1,'2026-05-10 02:46:35'),(4,'ORD17783547276525F693A94',1,4,'百威',50,5.00,250.00,1,'的萨芬萨','王五','18098983413','黑涩会',1,'2026-05-10 03:25:28',NULL,NULL),(5,'ORD1778360011790A9F4DADF',1,5,'喜力啤酒',2,10.00,20.00,8,'北京市朝阳区建国路88号','张三','13800138001','加急处理',1,'2026-05-10 04:53:32',1,'2026-07-06 17:35:19'),(6,'ORD1778360011829F2AAA84F',3,4,'百威',2,5.00,10.00,1,'上海市浦东新区世纪大道100号','李四','13800138002','',1,'2026-05-10 04:53:32',NULL,NULL),(7,'ORD1778360011852F8DC8E0E',1,6,'香蕉',1,2.00,2.00,4,'广州市天河区珠江新城69号','王五','13800138003','请务必送货上门',1,'2026-05-10 04:53:32',1,'2026-05-22 03:38:00'),(8,'ORD177836001187461DA8A81',1,4,'百威',1,5.00,5.00,2,'深圳市南山区科技园99号','赵六','13800138004','',1,'2026-05-10 04:53:32',1,'2026-05-22 03:39:16'),(9,'ORD177836001189821F9EDDD',2,4,'百威',1,5.00,5.00,3,'杭州市西湖区文三路478号','钱七','13800138005','周末可派送',1,'2026-05-10 04:53:32',1,'2026-07-06 09:35:47'),(10,'ORD17783600119213AD392C2',2,2,'外套',1,4.00,4.00,7,'成都市武侯区天府大道1号','孙八','13800138006','',1,'2026-05-10 04:53:32',NULL,'2026-05-24 12:36:13'),(12,'ORD1778360011971FA03D9C8',1,1,'鞋子',1,5.00,5.00,1,'南京市鼓楼区中山路100号','吴十','13800138008','',1,'2026-05-10 04:53:32',NULL,NULL),(13,'ORD1778360011994B2E41FAF',3,3,'青岛啤酒',5,12.00,60.00,2,'西安市雁塔区长安南路4号','郑一','13800138009','麻烦尽快发货',1,'2026-05-10 04:53:32',1,'2026-05-22 05:46:22'),(14,'ORD1778360012017824E3C02',3,3,'青岛啤酒',2,12.00,24.00,3,'重庆市渝中区解放碑88号','王二','13800138010','',1,'2026-05-10 04:53:32',1,'2026-05-22 05:45:53');
+
+-- 物流信息表
+
+DROP TABLE IF EXISTS `sys_express`;
+CREATE TABLE `sys_express` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '物流ID',
+  `order_id` bigint NOT NULL COMMENT '订单ID',
+  `order_no` varchar(50) NOT NULL COMMENT '订单编号',
+  `express_company` varchar(50) NOT NULL COMMENT '快递公司',
+  `express_no` varchar(100) NOT NULL COMMENT '运单号',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '物流状态：0-已揽收 1-运输中 2-派送中 3-已签收 4-异常',
+  `tracking_nodes` json DEFAULT NULL COMMENT '物流轨迹节点JSON',
+  `sender_name` varchar(50) DEFAULT NULL COMMENT '发件人',
+  `sender_phone` varchar(20) DEFAULT NULL COMMENT '发件人电话',
+  `sender_address` varchar(255) DEFAULT NULL COMMENT '发件地址',
+  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
+  `create_by` bigint DEFAULT NULL COMMENT '创建人ID',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_by` bigint DEFAULT NULL COMMENT '更新人ID',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_order_id` (`order_id`),
+  KEY `idx_express_no` (`express_no`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='物流信息表';
 
 -- 营销活动表
 

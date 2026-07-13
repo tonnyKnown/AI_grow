@@ -38,11 +38,22 @@
         <el-table-column prop="receiverName" label="收货人" />
         <el-table-column prop="receiverPhone" label="联系电话" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="280">
+        <el-table-column label="快递公司" width="120">
+          <template #default="{ row }">
+            <span>{{ getExpressCompany(row) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="运单号" width="160">
+          <template #default="{ row }">
+            <span>{{ getExpressNo(row) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="320">
           <template #default="{ row }">
             <el-button type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
-            <el-button type="success" size="small" v-if="row.status === 1" @click="handleUpdateStatus(row.id, 2)">确认发货</el-button>
+            <el-button type="success" size="small" v-if="row.status === 1" @click="handleOpenShip(row)">确认发货</el-button>
             <el-button type="warning" size="small" v-if="row.status === 2" @click="handleUpdateStatus(row.id, 3)">确认收货</el-button>
+            <el-button type="primary" size="small" v-if="row.status >= 2 && row.status !== 6" @click="handleViewExpress(row)">查看物流</el-button>
             <el-button type="info" size="small" @click="handleView(row)">详情</el-button>
             <el-button type="danger" size="small" @click="handleDelete(row.id)">删除</el-button>
           </template>
@@ -152,11 +163,34 @@
         <el-descriptions-item label="收货地址" :span="2">{{ selectedOrder?.shippingAddress }}</el-descriptions-item>
         <el-descriptions-item label="备注" :span="2">{{ selectedOrder?.remark || '-' }}</el-descriptions-item>
         <el-descriptions-item label="创建时间" :span="2">{{ selectedOrder?.createTime }}</el-descriptions-item>
+        <el-descriptions-item label="快递公司" v-if="detailExpress?.expressCompany">{{ detailExpress?.expressCompany }}</el-descriptions-item>
+        <el-descriptions-item label="运单号" v-if="detailExpress?.expressNo">{{ detailExpress?.expressNo }}</el-descriptions-item>
       </el-descriptions>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 发货弹窗 -->
+    <el-dialog v-model="shipDialogVisible" title="确认发货" width="420px">
+      <el-form :model="shipForm" label-width="90px">
+        <el-form-item label="快递公司" required>
+          <el-select v-model="shipForm.expressCompany" placeholder="请选择快递公司" style="width: 100%">
+            <el-option v-for="c in expressCompanies" :key="c" :label="c" :value="c" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="运单号" required>
+          <el-input v-model="shipForm.expressNo" placeholder="请输入快递运单号" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="shipDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleShip">确定发货</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 物流轨迹弹窗（使用共享组件） -->
+    <ExpressTrackingDialog v-model="trackingDialogVisible" :expressData="currentExpress" />
   </div>
 </template>
 
@@ -165,7 +199,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Document } from '@element-plus/icons-vue'
 import { getOrderPage, createOrder, updateOrder, updateOrderStatus, deleteOrder } from '@/api/order'
+import { getExpressByOrderId, createExpress } from '@/api/express'
 import { getProductPage } from '@/api/product'
+import ExpressTrackingDialog from '@/views/ExpressTrackingDialog.vue'
 
 const tableData = ref([])
 const dialogVisible = ref(false)
@@ -176,6 +212,21 @@ const products = ref([])
 const selectedOrder = ref({})
 const currentOrder = ref(null)
 const loading = ref(false)
+
+// 物流相关
+const expressCompanies = ['顺丰速运', '圆通速递', '中通快递', '韵达快递', '京东快递', '中国邮政', '德邦快递', '极兔速递', '申通快递']
+
+// 发货弹窗
+const shipDialogVisible = ref(false)
+const shippingOrder = ref(null)
+const shipForm = reactive({
+  expressCompany: '',
+  expressNo: ''
+})
+
+// 物流轨迹弹窗
+const trackingDialogVisible = ref(false)
+const currentExpress = ref(null)
 
 const pagination = reactive({
   pageNum: 1,
@@ -236,6 +287,41 @@ const getStatusText = (status) => {
   return texts[status] || '未知'
 }
 
+const detailExpress = ref(null)
+
+// 表格中获取快递公司显示值
+const getExpressCompany = (row) => {
+  if (row.status === 1 || row.status === 6) return '-'
+  if (row._express) return row._express.expressCompany
+  return '-'
+}
+
+// 表格中获取运单号显示值
+const getExpressNo = (row) => {
+  if (row.status === 1 || row.status === 6) return '-'
+  if (row._express) return row._express.expressNo
+  return '-'
+}
+
+// 加载时异步查询已发货订单的物流信息
+const loadExpressForOrders = async (orders) => {
+  if (!orders || orders.length === 0) return
+  const shippedStatuses = [2, 3, 4, 5, 7, 8, 9]
+  const promises = orders.map(async (order) => {
+    if (shippedStatuses.includes(order.status)) {
+      try {
+        const res = await getExpressByOrderId(order.id)
+        if (res.data) {
+          order._express = res.data
+        }
+      } catch {
+        // 无物流记录不处理
+      }
+    }
+  })
+  await Promise.all(promises)
+}
+
 const loadData = async () => {
   loading.value = true
   try {
@@ -244,7 +330,10 @@ const loadData = async () => {
       pageSize: pagination.pageSize,
       orderNo: searchKeyword.value
     })
-    tableData.value = res.data.records
+    const records = res.data.records || []
+    // 异步加载已发货订单的物流信息
+    await loadExpressForOrders(records)
+    tableData.value = records
     pagination.total = res.data.total
   } catch (error) {
     ElMessage.error('加载数据失败')
@@ -291,8 +380,19 @@ const handleEdit = (row) => {
   dialogVisible.value = true
 }
 
-const handleView = (row) => {
+const handleView = async (row) => {
   selectedOrder.value = row
+  detailExpress.value = null
+  if (row.status >= 2 && row.status !== 6) {
+    try {
+      const res = await getExpressByOrderId(row.id)
+      if (res.data) {
+        detailExpress.value = res.data
+      }
+    } catch {
+      // 无物流记录
+    }
+  }
   detailVisible.value = true
 }
 
@@ -303,6 +403,56 @@ const handleUpdateStatus = async (id, status) => {
     loadData()
   } catch (error) {
     ElMessage.error('操作失败')
+  }
+}
+
+// 打开发货弹窗
+const handleOpenShip = (row) => {
+  shippingOrder.value = row
+  shipForm.expressCompany = ''
+  shipForm.expressNo = ''
+  shipDialogVisible.value = true
+}
+
+// 提交发货（改状态 + 创建物流）
+const handleShip = async () => {
+  if (!shipForm.expressCompany) {
+    ElMessage.warning('请选择快递公司')
+    return
+  }
+  if (!shipForm.expressNo) {
+    ElMessage.warning('请输入运单号')
+    return
+  }
+  try {
+    // 1. 更新订单状态为已发货
+    await updateOrderStatus(shippingOrder.value.id, 2)
+    // 2. 创建物流记录
+    await createExpress({
+      orderId: shippingOrder.value.id,
+      expressCompany: shipForm.expressCompany,
+      expressNo: shipForm.expressNo
+    })
+    ElMessage.success('发货成功')
+    shipDialogVisible.value = false
+    loadData()
+  } catch (error) {
+    ElMessage.error('发货失败')
+  }
+}
+
+// 查看物流
+const handleViewExpress = async (row) => {
+  try {
+    const res = await getExpressByOrderId(row.id)
+    if (res.data) {
+      currentExpress.value = res.data
+      trackingDialogVisible.value = true
+    } else {
+      ElMessage.info('暂无物流信息')
+    }
+  } catch (error) {
+    ElMessage.error('获取物流信息失败')
   }
 }
 
@@ -410,4 +560,5 @@ onMounted(() => {
 .empty-state p {
   margin-bottom: 16px;
 }
+
 </style>

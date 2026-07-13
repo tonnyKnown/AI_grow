@@ -48,6 +48,11 @@ const routes = [
         component: () => import('@/views/OrderManagement.vue')
       },
       {
+        path: '/business/logistics',
+        name: 'LogisticsManagement',
+        component: () => import('@/views/LogisticsManagement.vue')
+      },
+      {
         path: '/business/marketing',
         name: 'MarketingManagement',
         component: () => import('@/views/MarketingManagement.vue')
