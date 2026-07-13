@@ -75,9 +75,9 @@ services:
   system-service:
     build:
       context: .
-      dockerfile: docker/java17-runtime/Dockerfile
+      dockerfile: docker/java21-runtime/Dockerfile
       args:
-        BASE_IMAGE: ${JAVA17_IMAGE:-eclipse-temurin:17-jre}
+        BASE_IMAGE: ${JAVA21_IMAGE:-eclipse-temurin:21-jre}
         JAR_FILE: system-service/target/system-service-1.0.0.jar
     container_name: oa-system-service
     environment:
@@ -104,9 +104,9 @@ services:
   business-service:
     build:
       context: .
-      dockerfile: docker/java17-runtime/Dockerfile
+      dockerfile: docker/java21-runtime/Dockerfile
       args:
-        BASE_IMAGE: ${JAVA17_IMAGE:-eclipse-temurin:17-jre}
+        BASE_IMAGE: ${JAVA21_IMAGE:-eclipse-temurin:21-jre}
         JAR_FILE: business-service/target/business-service-1.0.0.jar
     container_name: oa-business-service
     environment:
@@ -141,9 +141,9 @@ services:
   gateway:
     build:
       context: .
-      dockerfile: docker/java17-runtime/Dockerfile
+      dockerfile: docker/java21-runtime/Dockerfile
       args:
-        BASE_IMAGE: ${JAVA17_IMAGE:-eclipse-temurin:17-jre}
+        BASE_IMAGE: ${JAVA21_IMAGE:-eclipse-temurin:21-jre}
         JAR_FILE: gateway/target/gateway-1.0.0.jar
     container_name: oa-gateway
     environment:
@@ -161,7 +161,7 @@ services:
       business-service:
         condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "status=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8085/api/system/users); [ \"$status\" = \"401\" ]"]
+      test: ["CMD-SHELL", "status=$$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8085/api/system/users); [ \"$$status\" = \"401\" ]"]
       interval: 10s
       timeout: 5s
       retries: 12

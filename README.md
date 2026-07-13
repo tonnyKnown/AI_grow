@@ -85,8 +85,7 @@ flowchart LR
 
 ## 环境要求
 
-- JDK 17：运行 `gateway`、`system-service`、`business-service`
-- JDK 21：运行 `javachain` 和 `D:\my_mcp\mysql-plugin`
+- JDK 21：运行 `gateway`、`system-service`、`business-service`、`javachain` 和 `D:\my_mcp\mysql-plugin`
 - Maven 3.8+
 - Node.js 18+
 - MySQL 8+
@@ -233,4 +232,4 @@ mvn clean package
 - 不要提交真实 API Key、数据库密码、Nacos 密码、JWT 密钥。
 - `target/`、`node_modules/`、`javachain/temp/` 等构建产物应保持在 `.gitignore` 中。
 - 如果 GitHub 提示历史提交中包含密钥，需要清理本地未推送提交或重写相关历史。
-- `javachain` 使用 JDK 21，其他微服务使用 JDK 17，启动前注意本地 Java 版本。
+- 所有 Java 服务统一使用 JDK 21，启动前注意本地 Java 版本。

@@ -5,7 +5,7 @@
 ## 1. 前置条件
 
 - 已启动 Docker Desktop
-- 本机已安装 JDK 17+ 和 Maven
+- 本机已安装 JDK 21 和 Maven
 - 本机需要能成功打包根工程、`javachain/target/javachain-1.0.0.jar` 和 `D:\my_mcp\mysql-plugin\target\mysql-plugin-1.0.0.jar`
 
 如果 Docker Desktop 拉取 Docker Hub 镜像超时，可以复制镜像配置示例：

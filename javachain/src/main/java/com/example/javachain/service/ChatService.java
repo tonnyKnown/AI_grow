@@ -64,14 +64,4 @@ public class ChatService {
         return response;
     }
 
-    /**
-     * 带上下文的对话（兼容旧接口）
-     */
-    public String chatWithContext(List<String> messages) {
-        StringBuilder conversation = new StringBuilder();
-        for (String msg : messages) {
-            conversation.append(msg).append("\n");
-        }
-        return chatLanguageModel.generate(conversation.toString());
-    }
 }

@@ -15,7 +15,7 @@
 
 ## 技术栈
 
-- Java 17
+- Java 21
 - Spring Boot 3.4.1
 - Spring Web
 - Spring Security

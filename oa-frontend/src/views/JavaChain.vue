@@ -70,7 +70,7 @@
             <textarea 
               v-model="autoInput" 
               @keyup.enter.exact="handleSendAuto" 
-              placeholder="输入问题，我会自动判断使用哪个工具..."
+              placeholder="描述你要解决的问题，我会自主推理并调用工具处理..."
               :disabled="autoLoading"
             ></textarea>
             <button class="btn btn-primary" @click="handleSendAuto()" :disabled="autoLoading">发送</button>
@@ -575,11 +575,10 @@ const REACT_TABS = [
 ]
 
 const AUTO_TOOLS = [
-  { name: 'getCurrentTime()', desc: '获取当前系统时间', emoji: '🕐' },
-  { name: 'generateRandomNumber(min, max)', desc: '生成指定范围内的随机整数', emoji: '🎲' },
-  { name: 'reverseString(input)', desc: '反转字符串', emoji: '🔄' },
-  { name: 'addNumbers(a, b)', desc: '计算两个数的和', emoji: '🧮' },
-  { name: 'queryKnowledgeBase(question)', desc: '查询知识库信息', emoji: '📚' }
+  { name: '自主分析', desc: '理解用户问题，拆解目标并规划解决步骤', emoji: '🧠' },
+  { name: '工具调用', desc: '按需调用 MCP、业务查询、知识库等工具获取证据', emoji: '🛠️' },
+  { name: '结果整合', desc: '基于推理过程和工具结果生成最终答案', emoji: '✅' },
+  { name: '安全确认', desc: '遇到高风险操作时先等待用户确认', emoji: '🛡️' }
 ]
 
 const QUICK_QUESTIONS = [
@@ -607,7 +606,7 @@ const chatLoading = ref<boolean>(false)
 // 智能助手
 const autoInput = ref<string>('')
 const autoMessagesList = ref<Message[]>([
-  { id: 1, role: 'assistant', content: '你好！我是智能助手，可以自动判断使用合适的工具来回答你的问题。\n\n我会根据你的问题自动选择：获取时间、生成随机数、反转字符串、计算、查询知识库等工具。' }
+  { id: 1, role: 'assistant', content: '你好！我是智能助手，重点是帮你解决问题。\n\n你可以直接描述目标或问题，我会自主分析、按需调用工具，并给出可落地的结果。' }
 ])
 const autoLoading = ref<boolean>(false)
 
@@ -745,6 +744,35 @@ const extractMessageContent = (data: any, fallback: string = ''): string => {
     )
   }
   return String(data)
+}
+
+const formatAutoReasoningResult = (data: any, fallback: string = ''): string => {
+  if (!data || typeof data !== 'object') {
+    return extractMessageContent(data, fallback)
+  }
+
+  if (data.status === 'pending_confirmation') {
+    return [
+      '需要你确认后才能继续执行。',
+      '',
+      `工具: ${data.toolName || '未知工具'}`,
+      `操作: ${data.description || '无描述'}`,
+      data.actionInput ? `参数: ${JSON.stringify(data.actionInput, null, 2)}` : '',
+      '',
+      '请到“ReAct 推理”页签查看并确认该任务。'
+    ].filter(Boolean).join('\n')
+  }
+
+  const answer = data.answer || fallback || '任务已完成'
+  const meta = [
+    data.status ? `状态: ${data.status === 'completed' ? '已完成' : data.status}` : '',
+    typeof data.steps !== 'undefined' ? `推理步数: ${data.steps}` : '',
+    typeof data.duration !== 'undefined' ? `耗时: ${data.duration}ms` : ''
+  ].filter(Boolean)
+
+  return meta.length > 0
+    ? `${answer}\n\n${meta.join(' · ')}`
+    : String(answer)
 }
 
 const parseJsonData = (data: any): any => {
@@ -1119,7 +1147,7 @@ const handleSendAuto = async () => {
       autoMessagesList.value.push({ 
         id: Date.now(), 
         role: 'assistant', 
-        content: extractMessageContent(data, msg) 
+        content: formatAutoReasoningResult(data, msg)
       })
     } else {
       autoMessagesList.value.push({ 

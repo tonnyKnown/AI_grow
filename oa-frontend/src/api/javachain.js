@@ -53,7 +53,8 @@ export const javachainApi = {
     return request({
       url: '/javachain/chat/auto',
       method: 'post',
-      data: { question }
+      data: { question },
+      timeout: 0
     })
   },
   
