@@ -1,0 +1,9 @@
+.git
+.idea
+.claude
+logs
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+oa-frontend/node_modules
+oa-frontend/dist

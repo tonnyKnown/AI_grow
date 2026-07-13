@@ -14,6 +14,8 @@ java-backend
 ├── sql                     # 数据库建表与初始化脚本
 ├── src                     # 早期单体后端代码
 └── pom.xml                 # 微服务父级 Maven 工程
+
+D:\my_mcp\mysql-plugin       # MCP MySQL 工具服务，Docker 编排中作为独立服务启动
 ```
 
 ## 功能模块
@@ -44,6 +46,9 @@ flowchart LR
     D --> G
     E --> F
     E --> G
+    E --> J[mysql-plugin 8083]
+    J --> F
+    J --> I
     E --> H[DeepSeek / Ollama / DashScope]
     B --> I[Nacos 8848]
     C --> I
@@ -71,6 +76,7 @@ flowchart LR
 | gateway | 8085 | 前端 API 统一入口 |
 | system-service | 8081 | 系统权限服务 |
 | business-service | 8082 | 业务管理服务 |
+| mysql-plugin | 8083 | MCP MySQL 工具服务 |
 | javachain | 8087 | AI Agent 与知识库服务 |
 | oa-frontend | 5173 | Vite 默认开发端口 |
 | Nacos | 8848 | 服务注册发现 |
@@ -80,7 +86,7 @@ flowchart LR
 ## 环境要求
 
 - JDK 17：运行 `gateway`、`system-service`、`business-service`
-- JDK 21：运行 `javachain`
+- JDK 21：运行 `javachain` 和 `D:\my_mcp\mysql-plugin`
 - Maven 3.8+
 - Node.js 18+
 - MySQL 8+
@@ -122,17 +128,13 @@ $env:DASHSCOPE_API_KEY="your_dashscope_api_key"
 CREATE DATABASE example_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 ```
 
-2. 按需执行 `sql/` 目录下的建表和初始化脚本：
+2. 执行业务库完整初始化脚本：
 
 ```text
-sql/ddl_User.sql
-sql/ddl_Role.sql
-sql/ddl_Permission.sql
-sql/ddl_Menu.sql
-sql/ddl_Product.sql
-sql/ddl_Marketing.sql
-sql/test_data.sql
+sql/init.sql
 ```
+
+如需启动 XXL-Job Admin，再执行 `sql/xxl_job.sql` 初始化 XXL-Job 独立库表。
 
 ## 启动方式
 

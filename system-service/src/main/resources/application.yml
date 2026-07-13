@@ -5,22 +5,22 @@ spring:
   application:
     name: system-service
   datasource:
-    url: jdbc:mysql://localhost:3306/example_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: your_actual_password
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/example_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:your_actual_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
-      database: 0
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848
-        namespace: public
-        username: nacos
-        password: nOn2h1l8cHSG
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:public}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml

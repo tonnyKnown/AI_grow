@@ -251,9 +251,7 @@ public class McpService {
 
     public void refreshMcpServers() {
         if (!mcpServiceDiscoverer.isRegistered(targetServiceName)) {
-            mcpServers.remove(targetServiceName);
-            log.warn("MCP service is not registered or active in Nacos MCP Registry: {}", targetServiceName);
-            return;
+            log.warn("MCP service is not registered in Nacos MCP Registry, using fallback URL: {}", targetServiceName);
         }
 
         String endpoint = resolveSseEndpoint();

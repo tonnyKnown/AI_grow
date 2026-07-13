@@ -81,13 +81,7 @@ java -jar system-service/target/system-service-1.0.0.jar
 相关脚本位于根目录 `sql/`：
 
 ```text
-sql/ddl_User.sql
-sql/ddl_Role.sql
-sql/ddl_Permission.sql
-sql/ddl_Menu.sql
-sql/ddl_UserRole.sql
-sql/ddl_RolePermission.sql
-sql/test_data.sql
+sql/init.sql
 ```
 
 ## 配置注意事项

@@ -1,64 +1,41 @@
 # SQL 数据库脚本
 
-`sql` 目录存放 OA 系统的 MySQL 建表脚本和测试数据脚本，主要供 `system-service` 和 `business-service` 使用。
+`sql` 目录只保留当前 Docker 初始化需要的脚本。
 
-## 数据库
+## 文件说明
 
-默认数据库名：
-
-```sql
-example_db
-```
-
-创建数据库：
-
-```sql
-CREATE DATABASE example_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE example_db;
-```
-
-## 脚本说明
-
-| 文件 | 说明 | 所属服务 |
+| 文件 | 说明 | 是否自动执行 |
 | --- | --- | --- |
-| `ddl_User.sql` | 用户表 `sys_user` | `system-service` |
-| `ddl_Role.sql` | 角色表 `sys_role` | `system-service` |
-| `ddl_Permission.sql` | 权限表 `sys_permission` | `system-service` |
-| `ddl_Menu.sql` | 菜单表 `sys_menu` 和菜单初始化数据 | `system-service` |
-| `ddl_UserRole.sql` | 用户角色关系表 `sys_user_role` | `system-service` |
-| `ddl_RolePermission.sql` | 角色权限关系表 `sys_role_permission` | `system-service` |
-| `ddl_Product.sql` | 商品表 `sys_product` | `business-service` |
-| `ddl_category.sql` | 商品分类表 `sys_category` | `business-service` |
-| `ddl_Marketing.sql` | 营销活动表 `marketing` | `business-service` |
-| `data_Marketing.sql` | 营销活动测试数据 | `business-service` |
-| `test_data.sql` | 商品、订单等测试数据 | `business-service` |
+| `init.sql` | 业务库 `example_db` 的完整初始化脚本，包含本地真实业务表结构和数据 | 是 |
+| `xxl_job.sql` | XXL-Job Admin 独立库表和默认数据 | 是 |
 
-## 推荐执行顺序
+## Docker 初始化
 
-先执行建表脚本：
+项目根目录的 `docker-compose.yml` 只挂载下面两个脚本：
 
-```text
-ddl_User.sql
-ddl_Role.sql
-ddl_Permission.sql
-ddl_Menu.sql
-ddl_UserRole.sql
-ddl_RolePermission.sql
-ddl_category.sql
-ddl_Product.sql
-ddl_Marketing.sql
+```yaml
+./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+./sql/xxl_job.sql:/docker-entrypoint-initdb.d/02-xxl-job.sql:ro
 ```
 
-再执行数据脚本：
+`init.sql` 当前包含：
 
 ```text
-data_Marketing.sql
-test_data.sql
+sys_user
+sys_role
+sys_permission
+sys_menu
+sys_user_role
+sys_role_permission
+sys_category
+sys_product
+sys_order
+marketing
 ```
 
-## 注意事项
+## 执行提醒
 
-- 执行前确认当前连接的数据库是 `example_db`。
-- 部分脚本包含 `TRUNCATE` 或初始化数据，生产环境执行前需要先备份。
-- 如果表已经存在，重复执行非 `IF NOT EXISTS` 的 DDL 可能报错。
-- 数据库连接配置位于各服务的 `src/main/resources/application.yml`。
+- `init.sql` 是业务库唯一初始化入口，不再维护拆分版 `ddl_*.sql` 或测试数据脚本。
+- `init.sql` 包含 `DROP TABLE`，手动执行会重建对应业务表。
+- Docker MySQL 已有数据卷时，`/docker-entrypoint-initdb.d/` 里的脚本不会重复执行；只有空数据卷首次启动才会执行。
+- 如需重新初始化 Docker MySQL，需要先确认可以删除当前数据卷。

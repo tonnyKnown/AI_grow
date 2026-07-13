@@ -13,20 +13,20 @@ spring:
             readTimeout: 5000
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848
-        namespace: public
-        username: nacos
-        password: nOn2h1l8cHSG
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:public}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
   datasource:
-    url: jdbc:mysql://localhost:3306/example_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: your_actual_password
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/example_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:your_actual_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
-      database: 0
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -45,16 +45,16 @@ wechat:
     notify-url: http://your-domain.com/api/pay/notify
 
 # XXL-Job 分布式任务调度配置
-#xxl:
-#  job:
-#    admin:
-#      addresses: http://127.0.0.1:8088/xxl-job-admin
-#    executor:
-#      app-name: business-service
-#      port: 9999
-#      log-path: ./logs/xxl-job/jobhandler
-#      log-retention-days: 30
-#    access-token: xxl-job-token
+xxl:
+  job:
+    admin:
+      addresses: ${XXL_JOB_ADMIN_ADDRESSES:http://127.0.0.1:8088/xxl-job-admin}
+    executor:
+      app-name: ${XXL_JOB_EXECUTOR_APP_NAME:business-service}
+      port: ${XXL_JOB_EXECUTOR_PORT:9999}
+      log-path: ${XXL_JOB_EXECUTOR_LOG_PATH:./logs/xxl-job/jobhandler}
+      log-retention-days: ${XXL_JOB_EXECUTOR_LOG_RETENTION_DAYS:30}
+    access-token: ${XXL_JOB_ACCESS_TOKEN:}
 
 # JWT配置
 jwt:

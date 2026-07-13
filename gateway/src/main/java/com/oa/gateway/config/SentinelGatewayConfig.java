@@ -6,14 +6,12 @@ import com.alibaba.csp.sentinel.adapter.gateway.common.api.ApiPathPredicateItem;
 import com.alibaba.csp.sentinel.adapter.gateway.common.api.GatewayApiDefinitionManager;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayFlowRule;
 import com.alibaba.csp.sentinel.adapter.gateway.common.rule.GatewayRuleManager;
-import com.alibaba.csp.sentinel.adapter.gateway.sc.SentinelGatewayFilter;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.callback.GatewayCallbackManager;
 import com.alibaba.csp.sentinel.adapter.gateway.sc.exception.SentinelGatewayBlockExceptionHandler;
 import com.oa.gateway.common.Result;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -61,12 +59,6 @@ public class SentinelGatewayConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SentinelGatewayBlockExceptionHandler sentinelGatewayBlockExceptionHandler() {
         return new SentinelGatewayBlockExceptionHandler(viewResolvers, serverCodecConfigurer);
-    }
-
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public GlobalFilter sentinelGatewayFilter() {
-        return new SentinelGatewayFilter();
     }
 
     @PostConstruct

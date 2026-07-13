@@ -83,11 +83,8 @@ java -jar business-service/target/business-service-1.0.0.jar
 相关脚本位于根目录 `sql/`：
 
 ```text
-sql/ddl_Product.sql
-sql/ddl_category.sql
-sql/ddl_Marketing.sql
-sql/data_Marketing.sql
-sql/test_data.sql
+sql/init.sql
+sql/xxl_job.sql
 ```
 
 ## 配置注意事项

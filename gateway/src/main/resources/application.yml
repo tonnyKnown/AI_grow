@@ -7,10 +7,10 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 127.0.0.1:8848
-        namespace: public
-        username: nacos
-        password: nOn2h1l8cHSG
+        server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+        namespace: ${NACOS_NAMESPACE:public}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nOn2h1l8cHSG}
     gateway:
       discovery:
         locator:

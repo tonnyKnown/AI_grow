@@ -146,20 +146,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- MCP API - Unified MCP interfaces -->
-        <dependency>
-            <groupId>com.example.javachain</groupId>
-            <artifactId>mcp-api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
-        <!-- MCP Common - Enterprise MCP implementations -->
-        <dependency>
-            <groupId>com.example.javachain</groupId>
-            <artifactId>mcp-common</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
         <!-- Apache HttpClient 5.x for weather plugin -->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
@@ -211,7 +197,7 @@
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
-            <version>3.2.1</version>
+            <version>3.2.2</version>
         </dependency>
 
         <!-- Resilience4j 熔断器 -->
