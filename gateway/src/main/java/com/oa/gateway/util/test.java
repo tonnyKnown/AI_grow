@@ -1,5 +1,8 @@
 package com.oa.gateway.util;
 
+/**
+ * 算法练习类
+ */
 public class test {
 
     public static void main(String[] args) {

@@ -47,6 +47,16 @@ jwt:
 
 # 可信服务配置（用于服务间调用）
 gateway:
+  sentinel:
+    flow:
+      # business-service 整个服务限流，按网关 route id 统计，单位 QPS。
+      business-service:
+        count: 50
+      # javachain 的 /session/{sessionId}/history 单接口限流，单位 QPS。
+      javachain-session-history:
+        count: 10
+      # 统计窗口，单位秒。
+      interval-sec: 3
   trusted-services:
     python-service-key: python-service-secret-key-2024
 
