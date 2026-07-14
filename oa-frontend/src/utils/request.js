@@ -29,6 +29,9 @@ request.interceptors.response.use(
       if (res.code === 401) {
         handleAuthError()
       }
+      if (res.code === 503) {
+        handleServiceUnavailable()
+      }
       return Promise.reject(new Error(res.message || '请求失败'))
     }
     return res
@@ -38,6 +41,10 @@ request.interceptors.response.use(
       handleAuthError()
     } else if (error.response?.status === 403) {
       ElMessage.error('没有权限访问该资源')
+    } else if (error.response?.status === 502 || error.response?.status === 503) {
+      handleServiceUnavailable()
+    } else if (error.code === 'ECONNABORTED') {
+      handleServiceUnavailable()
     } else {
       ElMessage.error(error.message || '网络错误')
     }
@@ -52,6 +59,13 @@ function handleAuthError() {
   localStorage.removeItem('token')
   ElMessage.error('登录已过期，请重新登录')
   router.push('/login')
+}
+
+function handleServiceUnavailable() {
+  if (router.currentRoute.value?.path === '/maintenance') {
+    return
+  }
+  router.push('/maintenance')
 }
 
 export default request

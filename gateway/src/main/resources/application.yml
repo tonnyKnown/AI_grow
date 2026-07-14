@@ -17,7 +17,6 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        # system-service: 前端请求 /api/system/** → 转发为 /system/** 到 system-service
         - id: system-service
           uri: lb://system-service
           predicates:
@@ -25,7 +24,6 @@ spring:
           filters:
             - RewritePath=/api/system/(?<remaining>.*), /system/${remaining}
 
-        # business-service: 前端请求 /api/business/** → 转发为 /business/** 到 business-service
         - id: business-service
           uri: lb://business-service
           predicates:
@@ -33,34 +31,37 @@ spring:
           filters:
             - StripPrefix=1
 
-        # javachain-service: 前端请求 /api/javachain/** → 转发为 /api/** 到 javachain-service
         - id: javachain-service
           uri: lb://javachain
           predicates:
             - Path=/api/javachain/**
           filters:
             - RewritePath=/api/javachain/(?<remaining>.*), /api/${remaining}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 5000ms
 
 jwt:
   secret: oa-system-jwt-secret-key-2024-for-secure-authentication-very-long-enough
   expiration: 864000000
 
-# 可信服务配置（用于服务间调用）
 gateway:
   sentinel:
     flow:
-      # business-service 整个服务限流，按网关 route id 统计，单位 QPS。
       business-service:
         count: 50
-      # javachain 的 /session/{sessionId}/history 单接口限流，单位 QPS。
       javachain-session-history:
         count: 10
-      # 统计窗口，单位秒。
       interval-sec: 3
+  ratelimit:
+    per-user:
+      count: 100
+      window-seconds: 10
   trusted-services:
     python-service-key: python-service-secret-key-2024
 
-# 日志配置
 logging:
   level:
     com.oa.gateway: info

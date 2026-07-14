@@ -99,4 +99,33 @@ mcp:
   sse-endpoint: ${MCP_SSE_ENDPOINT:/mcp/sse}
   fallback-base-url: ${MCP_FALLBACK_BASE_URL:http://127.0.0.1:8083}
   plugin-dir: ./plugins
-  auto-load: false  # 暂时禁用，等类加载器问题解决后再开启
+  auto-load: false
+
+# Resilience4j 熔断配置
+# 熔断器三态模型：Closed(关闭) -> Open(打开) -> HalfOpen(半开) -> Closed(关闭)
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        # 失败率阈值（百分比）：当失败率超过此值时，熔断器从 Closed 转为 Open
+        failure-rate-threshold: 50
+        # 慢调用率阈值（百分比）：当慢调用率超过此值时，熔断器从 Closed 转为 Open
+        slow-call-rate-threshold: 50
+        # 慢调用判断阈值（毫秒）：超过此时间的调用视为慢调用
+        slow-call-duration-threshold: 10000
+        # 滑动窗口类型：COUNT_BASED(基于次数) 或 TIME_BASED(基于时间)
+        sliding-window-type: COUNT_BASED
+        # 滑动窗口大小：统计最近 N 次调用作为判断依据
+        sliding-window-size: 10
+        # 最小调用次数：熔断器开始计算失败率前，必须达到的最小调用次数
+        minimum-number-of-calls: 5
+        # 熔断器 Open 状态持续时间（毫秒）：打开后等待多久尝试恢复
+        wait-duration-in-open-state: 30000
+        # HalfOpen 状态允许的调用次数：半开状态下允许多少请求通过探测服务是否恢复
+        permitted-number-of-calls-in-half-open-state: 3
+        # 是否自动从 Open 转为 HalfOpen：到达 wait-duration 后自动进入半开状态
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      aiService:
+        # 引用上面的 default 配置
+        base-config: default
