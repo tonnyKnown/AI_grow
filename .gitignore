@@ -30,6 +30,7 @@ Thumbs.db
 # ---- General ----
 *.tmp
 .env
+.env.cloud
 *.env.local
 application-local.yml
 

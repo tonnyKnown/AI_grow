@@ -51,7 +51,7 @@ export const javachainApi = {
   // 智能助手
   sendAutoMessage: (question) => {
     return request({
-      url: '/javachain/chat/auto',
+      url: '/javachain/agent/react',
       method: 'post',
       data: { question },
       timeout: 0

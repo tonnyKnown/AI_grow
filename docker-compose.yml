@@ -73,6 +73,7 @@ services:
     restart: unless-stopped
 
   system-service:
+    image: ${TCR_PREFIX:-ccr.ccs.tencentyun.com/oa-app}/system-service:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/java21-runtime/Dockerfile
@@ -102,6 +103,7 @@ services:
     restart: unless-stopped
 
   business-service:
+    image: ${TCR_PREFIX:-ccr.ccs.tencentyun.com/oa-app}/business-service:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/java21-runtime/Dockerfile
@@ -139,6 +141,7 @@ services:
     restart: unless-stopped
 
   gateway:
+    image: ${TCR_PREFIX:-ccr.ccs.tencentyun.com/oa-app}/gateway:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/java21-runtime/Dockerfile
@@ -169,6 +172,7 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: ${TCR_PREFIX:-ccr.ccs.tencentyun.com/oa-app}/frontend:${IMAGE_TAG:-latest}
     build:
       context: ./oa-frontend
       dockerfile: Dockerfile
@@ -184,6 +188,7 @@ services:
     restart: unless-stopped
 
   mysql-plugin:
+    image: ${TCR_PREFIX:-ccr.ccs.tencentyun.com/oa-app}/mysql-plugin:${IMAGE_TAG:-latest}
     build:
       context: D:/my_mcp/mysql-plugin
       dockerfile: Dockerfile
@@ -212,6 +217,7 @@ services:
     restart: unless-stopped
 
   javachain:
+    image: ${TCR_PREFIX:-ccr.ccs.tencentyun.com/oa-app}/javachain:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/java21-runtime/Dockerfile
