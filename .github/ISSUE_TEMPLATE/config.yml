@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 文档导航
+    url: https://github.com/tonnyKnown/AI_grow/blob/dev/docs/README.md
+    about: 先查阅文档再提单（PRD / TRD / API / 数据库 / 运维 / 规范）
+  - name: 需求开发流程
+    url: https://github.com/tonnyKnown/AI_grow/blob/dev/docs/06-规范/需求开发流程.md
+    about: 变更流程九步法与模板使用说明

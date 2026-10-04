@@ -1,0 +1,143 @@
+name: 变更申请单
+description: 提出需求变更、新功能、重构。所有变更必须先立单。
+title: "[变更] "
+labels: ["type:change"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 变更申请单
+
+        > **铁律：先立单，后动手。** 没有 Issue 不改文档、不写代码。
+        > 详见 [需求开发流程](../docs/06-规范/需求开发流程.md)。
+
+  - type: dropdown
+    id: change-type
+    attributes:
+      label: 变更类型
+      description: 选择最贴近的一项
+      options:
+        - 新功能（type:feature）
+        - 需求变更（type:change）
+        - 重构（type:refactor）
+        - 缺陷修复（type:bug，若为 Bug 请改用「缺陷报告」模板）
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 影响模块
+      description: 可多选
+      options:
+        - label: 网关 gateway
+        - label: 系统服务 system-service
+        - label: 业务服务 business-service
+        - label: AI 服务 javachain
+        - label: 前端 oa-frontend
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景与动机
+      description: 为什么需要这个变更？现在有什么问题？
+      placeholder: |
+        示例：商品目前只能按名称/分类筛选，运营反馈无法按供应商维度统计，
+        需人工导出后处理，效率低。
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: 现状（改之前）
+      description: 当前系统是什么行为？
+      placeholder: 示例：商品管理列表仅支持按名称、分类筛选。
+    validations:
+      required: true
+
+  - type: textarea
+    id: target
+    attributes:
+      label: 目标（改之后）
+      description: 改成什么样？必须写清"从什么改成什么"，只写"调整/优化"视为不合格。
+      placeholder: |
+        示例：商品管理列表增加"供应商"筛选条件；
+        商品新增/编辑表单增加"供应商"必填字段。
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 影响范围评估
+      description: 评审核心依据。逐项勾选并说明，无影响填"无"。
+      value: |
+        - [ ] PRD（需求/规则）：
+        - [ ] TRD（技术方案）：
+        - [ ] API 文档（接口）：
+        - [ ] 数据库（表/字段/索引）：
+        - [ ] 部署运维手册：
+        - [ ] 开发规范：
+        - [ ] 兼容性（已有数据/调用方）：
+        - [ ] 数据迁移（是否需要脚本）：
+        - [ ] 测试用例（新增/修改）：
+        - [ ] 回滚方案：
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 必须可测量。避免"体验更好""性能更优"这类无法判定的描述。
+      value: |
+        | # | 验收项 | 判定方式 |
+        | --- | --- | --- |
+        | 1 | | |
+        | 2 | | |
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: 是否破坏性变更
+      description: 删除接口字段、修改字段类型、变更既有业务规则等均属破坏性
+      options:
+        - 否
+        - 是（请在下方说明过渡方案）
+    validations:
+      required: true
+
+  - type: textarea
+    id: tech-plan
+    attributes:
+      label: 技术方案（研发填写）
+      description: 影响服务、关键改动文件、数据库变更、接口变更、工作量评估
+      value: |
+        | 项 | 内容 |
+        | --- | --- |
+        | 影响服务 | |
+        | 关键改动文件 | |
+        | 数据库变更 | 表：____ 字段：____ 迁移脚本：____ |
+        | 接口变更 | 接口：____ 类型：新增/修改/删除 |
+        | 工作量评估 | 人日：____ |
+        | 破坏性变更过渡方案 | |
+    validations:
+      required: false
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 完成检查（合并前逐项确认）
+      value: |
+        - [ ] 代码已实现并通过自测
+        - [ ] 受影响的文档已同步修改（正文 + 版本号 + 变更记录表）
+        - [ ] 旧版本已归档至 `docs/archive/`
+        - [ ] `sql/` 脚本与数据库文档已同步
+        - [ ] 测试已验收
+        - [ ] 文档与代码在同一个 PR
+        - [ ] `docs/CHANGELOG.md` 已更新
+    validations:
+      required: false

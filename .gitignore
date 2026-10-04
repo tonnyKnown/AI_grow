@@ -16,6 +16,14 @@ oa-frontend/node_modules/
 oa-frontend/dist/
 oa-frontend/.idea/
 
+# ---- Redis / 运行时产物 ----
+dump.rdb
+*.rdb
+
+# ---- 工具/工作区数据 ----
+.workbuddy/
+.agent/
+
 # ---- Python ----
 chatbot-ai-service/__pycache__/
 chatbot-ai-service/*.pyc
