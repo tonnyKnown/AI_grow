@@ -8,7 +8,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -18,9 +18,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -30,7 +28,7 @@ public class UserRateLimitFilter implements GlobalFilter, Ordered {
     private static final String RATE_LIMIT_PREFIX = "gateway:ratelimit:user:";
     private static final String TOO_MANY_REQUESTS_MESSAGE = "请求过于频繁，请稍后再试";
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final ReactiveStringRedisTemplate redisTemplate;
 
     @Value("${gateway.ratelimit.per-user.count:5}")
     private int perUserCount;
@@ -38,7 +36,7 @@ public class UserRateLimitFilter implements GlobalFilter, Ordered {
     @Value("${gateway.ratelimit.per-user.window-seconds:1}")
     private int windowSeconds;
 
-    public UserRateLimitFilter(RedisTemplate<String, Object> redisTemplate) {
+    public UserRateLimitFilter(ReactiveStringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
@@ -55,28 +53,32 @@ public class UserRateLimitFilter implements GlobalFilter, Ordered {
         String path = request.getURI().getPath();
         String key = RATE_LIMIT_PREFIX + userId + ":" + path;
 
-        try {
-            // Redis 原子递增计数器
-            Long count = redisTemplate.opsForValue().increment(key);
-            
-            // 首次请求时设置过期时间，实现滑动窗口
-            if (count == 1) {
-                redisTemplate.expire(key, windowSeconds, TimeUnit.SECONDS);
-            }
-
-            // 判断是否超过限流阈值
-            if (count > perUserCount) {
-                log.warn("用户维度限流触发: userId={}, path={}, count={}, limit={}/{}s", userId, path, count, perUserCount, windowSeconds);
-                return handleRateLimit(exchange);
-            }
-
-            // 限流通过，继续执行后续过滤器链
-            return chain.filter(exchange);
-        } catch (Exception e) {
-            // Redis 异常时放行，避免影响正常请求
-            log.error("用户维度限流异常: userId={}, path={}", userId, path, e);
-            return chain.filter(exchange);
-        }
+        // 响应式链：递增计数 → 首次设置过期 → 判断阈值 → 异常兜底
+        String finalUserId = userId;
+        return redisTemplate.opsForValue().increment(key)
+            .flatMap(count -> {
+                // 首次请求时设置过期时间，实现固定窗口
+                if (count == 1L) {
+                    return redisTemplate.expire(key, Duration.ofSeconds(windowSeconds))
+                        .then(Mono.just(count));
+                }
+                return Mono.just(count);
+            })
+            .flatMap(count -> {
+                // 判断是否超过限流阈值
+                if (count > perUserCount) {
+                    log.warn("用户维度限流触发: userId={}, path={}, count={}, limit={}/{}s",
+                            finalUserId, path, count, perUserCount, windowSeconds);
+                    return handleRateLimit(exchange);
+                }
+                // 限流通过，继续执行后续过滤器链
+                return chain.filter(exchange);
+            })
+            .onErrorResume(e -> {
+                // Redis 异常时放行，避免影响正常请求
+                log.error("用户维度限流异常: userId={}, path={}", finalUserId, path, e);
+                return chain.filter(exchange);
+            });
     }
 
     /**

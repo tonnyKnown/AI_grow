@@ -45,12 +45,18 @@
             <el-form-item prop="password">
               <el-input
                 v-model="loginForm.password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 placeholder="请输入密码"
                 size="large"
                 :prefix-icon="Lock"
                 @keyup.enter="handleLogin"
-              />
+              >
+              <template #append>
+                <el-button @click="showPassword = !showPassword">
+                  {{ showPassword ? '隐藏' : '显示' }}
+                </el-button>
+              </template>
+              </el-input>
             </el-form-item>
             <el-form-item>
               <el-button
@@ -85,6 +91,7 @@ const userStore = useUserStore()
 
 const loginFormRef = ref()
 const loading = ref(false)
+const showPassword = ref(false)
 
 const loginForm = reactive({
   username: 'admin',
