@@ -36,13 +36,18 @@ public class MenuServiceImpl implements MenuService {
         if (roles == null || roles.isEmpty()) {
             return new ArrayList<>();
         }
-        List<String> roleList = Arrays.asList(roles.split(","));
-        List<Menu> result = new ArrayList<>();
-        for (String role : roleList) {
-            List<Menu> menus = menuMapper.selectByRoleKey(role.trim());
-            result.addAll(menus);
+        // 多角色用户的菜单会被多个角色重复命中，先按 id 去重再构树，避免侧边栏出现重复项
+        Map<Long, Menu> merged = new LinkedHashMap<>();
+        for (String role : roles.split(",")) {
+            String roleKey = role.trim();
+            if (roleKey.isEmpty()) {
+                continue;
+            }
+            for (Menu menu : menuMapper.selectByRoleKey(roleKey)) {
+                merged.putIfAbsent(menu.getId(), menu);
+            }
         }
-        return buildTree(result);
+        return buildTree(new ArrayList<>(merged.values()));
     }
 
     @Override

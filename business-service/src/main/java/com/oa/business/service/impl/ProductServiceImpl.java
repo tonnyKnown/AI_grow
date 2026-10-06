@@ -1,5 +1,6 @@
 package com.oa.business.service.impl;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.dto.PageResponse;
 import com.oa.business.dto.ProductRequest;
 import com.oa.business.entity.Product;
@@ -30,10 +31,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResponse<Product> getProductsPage(int pageNum, int pageSize) {
         List<Product> all = productMapper.selectAll();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, all.size());
-        List<Product> records = start < all.size() ? all.subList(start, end) : List.of();
-        return PageResponse.of(all.size(), pageNum, pageSize, records);
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Product> records = PageUtils.slice(all, safePageNum, safePageSize);
+        return PageResponse.of(all.size(), safePageNum, safePageSize, records);
     }
 
     @Override

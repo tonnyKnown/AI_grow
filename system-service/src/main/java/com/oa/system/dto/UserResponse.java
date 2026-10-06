@@ -16,6 +16,12 @@ public class UserResponse {
     private String remark;
     private List<Long> roleIds;
     private List<String> roleNames;
+    /**
+     * 角色标识（role_key）列表。
+     * 前端 userStore 的 roles / hasRole 依赖此字段做菜单过滤与权限判断，
+     * 必须与登录接口 /system/auth/login 返回的 roles 保持一致。
+     */
+    private List<String> roles;
     private List<String> permissions;
 
     public UserResponse() {
@@ -115,6 +121,14 @@ public class UserResponse {
 
     public void setRoleNames(List<String> roleNames) {
         this.roleNames = roleNames;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 
     public List<String> getPermissions() {

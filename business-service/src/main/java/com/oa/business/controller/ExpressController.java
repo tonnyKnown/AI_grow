@@ -1,5 +1,6 @@
 package com.oa.business.controller;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.common.Result;
 import com.oa.business.dto.ExpressShippingRequest;
 import com.oa.business.dto.PageResponse;
@@ -39,13 +40,13 @@ public class ExpressController {
             @RequestParam(required = false) Integer status) {
         List<Express> allList = expressService.getListByCondition(orderNo, expressCompany, status);
         int total = allList.size();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, total);
-        List<Express> records = start < total ? allList.subList(start, end) : List.of();
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Express> records = PageUtils.slice(allList, safePageNum, safePageSize);
         Map<String, Object> data = new HashMap<>();
         data.put("records", records);
         data.put("total", total);
-        data.put("pageNum", pageNum);
+        data.put("pageNum", safePageNum);
         data.put("pageSize", pageSize);
         return Result.success(data);
     }

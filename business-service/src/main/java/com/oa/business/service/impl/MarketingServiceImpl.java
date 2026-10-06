@@ -1,5 +1,6 @@
 package com.oa.business.service.impl;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.dto.PageResponse;
 import com.oa.business.entity.Marketing;
 import com.oa.business.mapper.MarketingMapper;
@@ -29,10 +30,10 @@ public class MarketingServiceImpl implements MarketingService {
     @Override
     public PageResponse<Marketing> getMarketingsPage(int pageNum, int pageSize, String sortOrder) {
         List<Marketing> all = marketingMapper.selectAll(sortOrder);
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, all.size());
-        List<Marketing> records = start < all.size() ? all.subList(start, end) : List.of();
-        return PageResponse.of(all.size(), pageNum, pageSize, records);
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Marketing> records = PageUtils.slice(all, safePageNum, safePageSize);
+        return PageResponse.of(all.size(), safePageNum, safePageSize, records);
     }
 
     @Override

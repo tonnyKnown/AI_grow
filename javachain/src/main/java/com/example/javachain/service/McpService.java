@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,6 +47,9 @@ public class McpService {
     private final DiscoveryClient discoveryClient;
     private final SkillService skillService;
     private final Map<String, McpServerInfo> mcpServers = new ConcurrentHashMap<>();
+
+    /** 被手动注销的 Server 名称，用于阻止自动发现把它重新注册回来 */
+    private final Set<String> unregisteredServers = ConcurrentHashMap.newKeySet();
 
     @Value("${mcp.target-service:mysql-mcp-server}")
     private String targetServiceName;
@@ -250,6 +254,11 @@ public class McpService {
     }
 
     public void refreshMcpServers() {
+        if (unregisteredServers.contains(targetServiceName)) {
+            log.debug("MCP service {} was unregistered manually, skip auto discovery", targetServiceName);
+            return;
+        }
+
         if (!mcpServiceDiscoverer.isRegistered(targetServiceName)) {
             log.warn("MCP service is not registered in Nacos MCP Registry, using fallback URL: {}", targetServiceName);
         }
@@ -261,7 +270,46 @@ public class McpService {
         log.debug("Discovered MCP service {} at {}", targetServiceName, endpoint);
     }
 
+    /**
+     * 列出当前已发现的全部 MCP Server。
+     *
+     * @return Server 列表快照，不会为 null
+     */
+    public List<McpServerInfo> getServers() {
+        refreshMcpServers();
+        return new ArrayList<>(mcpServers.values());
+    }
+
+    /**
+     * 注销指定的 MCP Server。
+     *
+     * <p>注销会同时禁止后续自动发现再次把它注册回来（否则下一次
+     * {@link #refreshMcpServers()} 会把目标服务重新 computeIfAbsent 加回来，
+     * 表现为「注销不掉」）。需要恢复时调用 {@link #registerMcpServer(McpServerInfo)}。
+     *
+     * @param serverName Server 名称
+     * @return true 表示确实移除了一个已注册的 Server
+     */
+    public boolean unregisterServer(String serverName) {
+        if (serverName == null || serverName.isBlank()) {
+            return false;
+        }
+
+        McpServerInfo removed = mcpServers.remove(serverName);
+        unregisteredServers.add(serverName);
+        if (serverName.equals(targetServiceName)) {
+            log.info("MCP server {} unregistered, auto discovery for it is suspended until re-registered", serverName);
+        } else {
+            log.info("MCP server {} unregistered", serverName);
+        }
+        return removed != null;
+    }
+
     public void registerMcpServer(McpServerInfo server) {
+        if (server == null || server.getName() == null) {
+            return;
+        }
+        unregisteredServers.remove(server.getName());
         mcpServers.put(server.getName(), server);
         log.info("Registered MCP server manually: {}", server.getName());
     }

@@ -1,5 +1,6 @@
 package com.oa.business.controller;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.common.Result;
 import com.oa.business.entity.Order;
 import com.oa.business.service.OrderService;
@@ -30,14 +31,14 @@ public class OrderController {
             @RequestParam(required = false) Integer status) {
         List<Order> allOrders = orderService.getOrdersByCondition(orderNo, productName, status);
         int total = allOrders.size();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, total);
-        List<Order> records = start < total ? allOrders.subList(start, end) : List.of();
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Order> records = PageUtils.slice(allOrders, safePageNum, safePageSize);
         Map<String, Object> data = new HashMap<>();
         data.put("records", records);
         data.put("total", total);
-        data.put("pageNum", pageNum);
-        data.put("pageSize", pageSize);
+        data.put("pageNum", safePageNum);
+        data.put("pageSize", safePageSize);
         return Result.success(data);
     }
 

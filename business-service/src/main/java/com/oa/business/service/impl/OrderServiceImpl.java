@@ -1,5 +1,6 @@
 package com.oa.business.service.impl;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.dto.PageResponse;
 import com.oa.business.entity.Order;
 import com.oa.business.mapper.OrderMapper;
@@ -44,10 +45,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public PageResponse<Order> getOrdersPage(int pageNum, int pageSize) {
         List<Order> all = orderMapper.selectAll();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, all.size());
-        List<Order> records = start < all.size() ? all.subList(start, end) : List.of();
-        return PageResponse.of(all.size(), pageNum, pageSize, records);
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Order> records = PageUtils.slice(all, safePageNum, safePageSize);
+        return PageResponse.of(all.size(), safePageNum, safePageSize, records);
     }
 
     @Override

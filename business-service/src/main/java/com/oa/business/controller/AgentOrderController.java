@@ -1,6 +1,7 @@
 package com.oa.business.controller;
 
 import com.oa.business.aspect.ApiLog;
+import com.oa.business.common.PageUtils;
 import com.oa.business.common.Result;
 import com.oa.business.entity.Order;
 import com.oa.business.service.OrderService;
@@ -32,9 +33,9 @@ public class AgentOrderController {
         List<Order> orders = orderService.getOrdersByUserIdOrderNoStatus(userId, orderNo, status);
 
         int total = orders.size();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, total);
-        List<Order> records = start < total ? orders.subList(start, end) : List.of();
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Order> records = PageUtils.slice(orders, safePageNum, safePageSize);
 
         Map<String, Object> data = new HashMap<>();
         data.put("records", records);

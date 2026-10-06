@@ -17,9 +17,19 @@ public class SkillParser {
     private static final Pattern FRONTMATTER_PATTERN = Pattern.compile("^---\\s*\\n(.*?)\\n---\\s*\\n", Pattern.DOTALL);
     private static final Pattern NAME_PATTERN = Pattern.compile("^name:\\s*[\"']?([^\"']+)[\"']?", Pattern.MULTILINE);
     private static final Pattern DESCRIPTION_PATTERN = Pattern.compile("^description:\\s*[\"']?([^\"']+)[\"']?", Pattern.MULTILINE);
+    private static final Pattern TRIGGER_PATTERN = Pattern.compile("^trigger:[ \\t]*[\"']?([^\"'\\r\\n]+?)[\"']?[ \\t]*$", Pattern.MULTILINE);
 
+    /**
+     * 步骤匹配：识别「### 步骤 N：xxx」或「N. **xxx**」标题，以及紧随其后的
+     * 「- **使用工具**: `tool_name`」声明。
+     *
+     * <p>注意：这里必须使用 {@code \R} 而不是 {@code \n} 来跨行。仓库中的
+     * SKILL.md 为 CRLF 换行，而 MULTILINE 模式下 {@code $} 断言的是「\r\n 整体之前」，
+     * 若写成 {@code $.*\n} 则 {@code \n} 无法匹配 {@code \r\n} 中的第一个字符
+     * （{@code .} 不匹配 {@code \r}），会导致所有步骤匹配失败、解析出 0 个步骤。
+     */
     private static final Pattern STEP_PATTERN = Pattern.compile(
-            "^(?:(\\d+)\\.\\s*\\*\\*(.+?)\\*\\*|###\\s*步骤\\s*(\\d+)[:：](.+?))$.*\\n\\s*-\\s*\\*?\\*?使用工具\\*?\\*?:\\s*`([^`]+)`",
+            "^(?:(\\d+)\\.\\s*\\*\\*(.+?)\\*\\*|###\\s*步骤\\s*(\\d+)[:：](.+?))$\\R\\s*-\\s*\\*?\\*?使用工具\\*?\\*?:\\s*`([^`]+)`",
             Pattern.MULTILINE);
 
     private static final Pattern PARAM_PATTERN = Pattern.compile("- `(\\w+)`:\\s*([^\n]+?)(?=\\n(?:\\s*-|\\s*\\w)|$)");
@@ -31,7 +41,7 @@ public class SkillParser {
 
             String description = extractDescription(content);
             skill.setDescription(description);
-            skill.setTrigger(extractTrigger(description));
+            skill.setTrigger(extractTrigger(content, description));
 
             List<SkillStep> steps = extractSteps(content);
             skill.setSteps(steps);
@@ -53,7 +63,24 @@ public class SkillParser {
         return "";
     }
 
-    private String extractTrigger(String description) {
+    /**
+     * 提取触发词。
+     *
+     * <p>优先使用 SKILL.md frontmatter 中显式声明的 {@code trigger} 字段；
+     * 未声明时才退化为「按描述文本猜测关键词」的旧逻辑。
+     */
+    private String extractTrigger(String content, String description) {
+        Matcher triggerMatcher = TRIGGER_PATTERN.matcher(content);
+        if (triggerMatcher.find()) {
+            String declared = triggerMatcher.group(1);
+            if (declared != null && !declared.isBlank()) {
+                return declared.trim();
+            }
+        }
+        return guessTrigger(description);
+    }
+
+    private String guessTrigger(String description) {
         if (description == null || description.isEmpty()) {
             return null;
         }

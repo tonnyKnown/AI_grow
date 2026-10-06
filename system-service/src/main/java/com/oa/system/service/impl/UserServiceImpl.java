@@ -1,9 +1,12 @@
 package com.oa.system.service.impl;
 
 import com.oa.system.dto.*;
+import com.oa.system.entity.Permission;
 import com.oa.system.entity.User;
 import com.oa.system.entity.UserRole;
 import com.oa.system.entity.Role;
+import com.oa.system.mapper.PermissionMapper;
+import com.oa.system.mapper.RolePermissionMapper;
 import com.oa.system.mapper.UserMapper;
 import com.oa.system.mapper.UserRoleMapper;
 import com.oa.system.mapper.RoleMapper;
@@ -27,6 +30,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private RolePermissionMapper rolePermissionMapper;
+
+    @Autowired
+    private PermissionMapper permissionMapper;
 
     @Override
     public UserResponse getUserById(Long id) {
@@ -116,14 +125,29 @@ public class UserServiceImpl implements UserService {
         response.setRoleIds(roleIds);
 
         List<String> roleNames = new ArrayList<>();
+        List<String> roleKeys = new ArrayList<>();
+        List<String> permissions = new ArrayList<>();
         for (Long roleId : roleIds) {
             Role role = roleMapper.selectById(roleId);
-            if (role != null) {
-                roleNames.add(role.getRoleName());
+            if (role == null) {
+                continue;
+            }
+            roleNames.add(role.getRoleName());
+            if (role.getRoleKey() != null) {
+                roleKeys.add(role.getRoleKey());
+            }
+            // 汇总该角色下的权限标识，供前端按钮级权限判断使用
+            for (Long permissionId : rolePermissionMapper.selectPermissionIdsByRoleId(roleId)) {
+                Permission permission = permissionMapper.selectById(permissionId);
+                if (permission != null && permission.getPermissionKey() != null) {
+                    permissions.add(permission.getPermissionKey());
+                }
             }
         }
         response.setRoleNames(roleNames);
-        response.setPermissions(new ArrayList<>());
+        // roles 与 permissions 必须与登录接口返回结构一致，否则刷新页面后前端角色/权限会丢失
+        response.setRoles(roleKeys);
+        response.setPermissions(permissions);
 
         return response;
     }

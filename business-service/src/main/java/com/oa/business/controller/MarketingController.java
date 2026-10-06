@@ -1,5 +1,6 @@
 package com.oa.business.controller;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.common.Result;
 import com.oa.business.entity.Marketing;
 import com.oa.business.service.MarketingService;
@@ -29,14 +30,14 @@ public class MarketingController {
             @RequestParam(defaultValue = "desc") String sortOrder) {
         List<Marketing> allMarketings = marketingService.getAllMarketings(sortOrder);
         int total = allMarketings.size();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, total);
-        List<Marketing> records = start < total ? allMarketings.subList(start, end) : List.of();
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Marketing> records = PageUtils.slice(allMarketings, safePageNum, safePageSize);
         Map<String, Object> data = new HashMap<>();
         data.put("records", records);
         data.put("total", total);
-        data.put("pageNum", pageNum);
-        data.put("pageSize", pageSize);
+        data.put("pageNum", safePageNum);
+        data.put("pageSize", safePageSize);
         return Result.success(data);
     }
 

@@ -1,5 +1,6 @@
 package com.oa.system.controller;
 
+import com.oa.system.common.PageUtils;
 import com.oa.system.common.Result;
 import com.oa.system.dto.*;
 import com.oa.system.service.UserService;
@@ -38,14 +39,14 @@ public class UserController {
             @RequestParam(defaultValue = "10") int pageSize) {
         List<UserResponse> allUsers = userService.getAllUsers();
         int total = allUsers.size();
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, total);
-        List<UserResponse> records = start < total ? allUsers.subList(start, end) : List.of();
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<UserResponse> records = PageUtils.slice(allUsers, safePageNum, safePageSize);
         Map<String, Object> data = new HashMap<>();
         data.put("records", records);
         data.put("total", total);
-        data.put("pageNum", pageNum);
-        data.put("pageSize", pageSize);
+        data.put("pageNum", safePageNum);
+        data.put("pageSize", safePageSize);
         return Result.success(data);
     }
 

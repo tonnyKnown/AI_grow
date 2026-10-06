@@ -99,7 +99,9 @@ public class UserRateLimitFilter implements GlobalFilter, Ordered {
     }
 
     /**
-     * 获取过滤器执行顺序，优先级极高确保在认证等过滤器之前执行
+     * 获取过滤器执行顺序。
+     * 顺序值大于 JwtAuthenticationFilter(-2000000)，因此在其之后执行，
+     * 这样可以复用网关注入的 userId 请求头做「按用户」限流。
      * @return 过滤器顺序值
      */
     @Override

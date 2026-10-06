@@ -1,5 +1,6 @@
 package com.oa.business.service.impl;
 
+import com.oa.business.common.PageUtils;
 import com.oa.business.dto.ExpressShippingRequest;
 import com.oa.business.dto.PageResponse;
 import com.oa.business.entity.Express;
@@ -41,10 +42,10 @@ public class ExpressServiceImpl implements ExpressService {
     @Override
     public PageResponse<Express> getExpressPage(int pageNum, int pageSize, String orderNo, String expressCompany, Integer status) {
         List<Express> all = expressMapper.selectByCondition(orderNo, expressCompany, status);
-        int start = (pageNum - 1) * pageSize;
-        int end = Math.min(start + pageSize, all.size());
-        List<Express> records = start < all.size() ? all.subList(start, end) : List.of();
-        return PageResponse.of(all.size(), pageNum, pageSize, records);
+        int safePageNum = PageUtils.normalizePageNum(pageNum);
+        int safePageSize = PageUtils.normalizePageSize(pageSize);
+        List<Express> records = PageUtils.slice(all, safePageNum, safePageSize);
+        return PageResponse.of(all.size(), safePageNum, safePageSize, records);
     }
 
     @Override

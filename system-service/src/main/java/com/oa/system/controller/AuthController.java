@@ -78,10 +78,11 @@ public class AuthController {
             }
             
             UserResponse user = userService.getUserByUsername(usernameHeader);
-            if (user == null || user.getRoleNames() == null || user.getRoleNames().isEmpty()) {
+            if (user == null || user.getRoles() == null || user.getRoles().isEmpty()) {
                 return Result.success(Arrays.asList());
             }
-            String roles = String.join(",", user.getRoleNames());
+            // sys_menu.role_keys 存的是角色标识（role_key），不是角色名称，必须用 roles 匹配
+            String roles = String.join(",", user.getRoles());
             List<Menu> menus = menuService.getMenusByRoles(roles);
             return Result.success(menus);
         } catch (Exception e) {
