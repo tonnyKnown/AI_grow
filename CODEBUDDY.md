@@ -20,8 +20,9 @@ OA 智能办公管理系统 — a Spring Cloud microservice backend + Vue 3 fron
 | Doc authoring standard (structure, headings, formatting) | `docs/06-规范/文档编写规范.md` |
 | Requirement/change workflow (Issue-driven 9 steps) | `docs/06-规范/需求开发流程.md` |
 | Change/version management rules (versioning, archiving) | `docs/06-规范/变更管理规范.md` |
+| Iteration & release planning (four-layer model, gates, DoD) | `docs/06-规范/迭代与版本规划规范.md` |
 | Project changelog & known issues | `docs/CHANGELOG.md` |
-| Templates (change request, review, acceptance) | `docs/_templates/` |
+| Templates (iteration plan, change request, review, acceptance) | `docs/_templates/` |
 | GitHub Issue templates | `.github/ISSUE_TEMPLATE/` |
 | Historical doc versions (frozen) | `docs/archive/` |
 
@@ -36,6 +37,9 @@ When changing code, keep the matching doc in sync (see `docs/README.md` → 文�
 ```bash
 python scripts/check-docs.py            # all docs
 python scripts/check-docs.py --links-only
+
+# At iteration end: verify code changes have matching doc updates
+python scripts/check-doc-sync.py --from v1.0.0
 ```
 
 It validates heading structure, code-fence language tags, table style, markers, link targets, and anchors against `docs/06-规范/文档编写规范.md`. `docs/archive/`, `docs/_templates/`, `README.md`, `CHANGELOG.md` and this file are exempt from the H2-numbering rule.
