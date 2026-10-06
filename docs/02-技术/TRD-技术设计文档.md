@@ -1,8 +1,8 @@
 # 技术设计文档（TRD）
 
 > 项目名称：OA 智能办公管理系统
-> 文档版本：v1.0
-> 最后更新：2026-10-04
+> 文档版本：v1.2
+> 最后更新：2026-10-06
 > 适用对象：研发、架构、运维
 
 ---
@@ -152,7 +152,7 @@ flowchart TB
 
 #### 根 Maven 工程（`com.oa:oa-system`）
 
-```
+```text
 java-backend/
 ├── pom.xml                 # 父 POM，聚合如下三个模块
 ├── gateway/                # 网关
@@ -162,7 +162,7 @@ java-backend/
 
 #### javachain（独立工程）
 
-```
+```text
 javachain/
 ├── pom.xml                 # 独立 POM，无 parent
 └── src/main/java/com/example/javachain/
@@ -616,7 +616,7 @@ controller → service / service.impl → mapper → MySQL
 
 ### 9.1 目录结构
 
-```
+```text
 oa-frontend/
 ├── src/
 │   ├── api/            # 按业务域拆分的接口封装
@@ -650,6 +650,13 @@ oa-frontend/
 2. 有 Token 且访问登录页 → 跳转首页
 3. 有 Token 但无用户信息 → 拉取用户信息
 4. 根据用户菜单校验路径可访问性
+
+第 4 条的判定规则：
+
+- 以 `/system/auth/menu` 返回的菜单树路径集合为白名单，用户访问不在其中的页面时重定向到 `/dashboard`；
+- **豁免路径** `/login`、`/maintenance`、`/dashboard` —— 其中 `/dashboard` 是重定向目标，必须始终可达，否则「用户菜单不含首页」时会形成无限重定向；
+- 菜单为空数组（后端异常）时**不拦截**，避免菜单异常导致全站不可用；
+- 页面必须与 `sys_menu.path` 一一对应，否则会被误拦。当前 `sys_menu` 中的路径与 `router/index.js` 的路由已对齐（含 `/business/logistics`）。
 
 ### 9.4 构建与部署
 
@@ -739,6 +746,8 @@ mysql(healthy) → redis → nacos(healthy) → xxl-job-admin
 | safety 描述与真实配置不符 | `AgentController.getStepInfo` | 从 `ReActAgentConfig` 读取真实值 |
 | 服务层无接口级鉴权 | `system-service/SecurityConfig` | 按需补充方法级权限校验 |
 | 分页在内存中实现 | 各 Controller 的 `subList` | 大数据量下改由 SQL `LIMIT` 分页 |
+| 插件只登记元信息 | `PluginGovernanceService.loadPlugin` | 尚未实现插件类动态加载与工具自动注册 |
+| Skill 声明的工具需自行注册 | `.trae/skills/*/SKILL.md` 中的 `使用工具` 声明 | 声明的工具必须是本地 `@Tool` 方法或 Nacos MCP Registry 中的远端工具，否则执行时报 `Tool not found` |
 
 ---
 
@@ -756,6 +765,10 @@ mysql(healthy) → redis → nacos(healthy) → xxl-job-admin
 | MCP 服务 | `javachain/src/main/java/com/example/javachain/service/McpService.java` |
 | RAG 服务 | `javachain/src/main/java/com/example/javachain/service/RagService.java` |
 | 技能注册 | `javachain/src/main/java/com/example/javachain/skill/SkillRegistry.java` |
+| 技能解析 | `javachain/src/main/java/com/example/javachain/skill/SkillParser.java` |
+| 技能执行 | `javachain/src/main/java/com/example/javachain/service/SkillExecutionService.java` |
+| 插件治理 | `javachain/src/main/java/com/example/javachain/service/PluginGovernanceService.java` |
+| 分页工具 | `system-service`、`business-service` 各自的 `common/PageUtils.java` |
 | 本地工具 | `javachain/src/main/java/com/example/javachain/service/SkillService.java` |
 | 前端请求封装 | `oa-frontend/src/utils/request.js` |
 | 前端路由 | `oa-frontend/src/router/index.js` |
@@ -774,4 +787,6 @@ mysql(healthy) → redis → nacos(healthy) → xxl-job-admin
 
 | 版本 | 日期 | 变更内容 | 关联 Issue | 修改人 |
 | --- | --- | --- | --- | --- |
+| v1.2 | 2026-10-06 | 细化 §9.3 路由守卫判定规则；技术债补充「插件只登记元信息」「Skill 工具需自行注册」；关键文件索引补充技能执行与插件治理 | — | — |
+| v1.1 | 2026-10-06 | 目录结构代码块补充 `text` 语言标注（符合文档编写规范） | — | — |
 | v1.0 | 2026-10-04 | 初版，覆盖架构、网关、鉴权、javachain AI 能力与 7 项 ADR | — | — |

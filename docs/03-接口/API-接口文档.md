@@ -1,8 +1,8 @@
 # API 接口文档
 
 > 项目名称：OA 智能办公管理系统
-> 文档版本：v1.0
-> 最后更新：2026-10-04
+> 文档版本：v1.1
+> 最后更新：2026-10-06
 > 适用对象：前后端研发、测试、第三方对接方
 
 ---
@@ -924,6 +924,99 @@ GET /api/javachain/agent/steps
 
 **上传**：`multipart/form-data`，文件字段以接口实现为准。
 
+### 4.8 技能（Skills）
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/javachain/skills/list` | 列出已加载的 Skill |
+| GET | `/api/javachain/skills/reload` | 重新扫描并加载 Skill 目录 |
+| POST | `/api/javachain/skills/execute/{skillId}` | 按名称执行 Skill |
+| POST | `/api/javachain/skills/auto` | 自动识别意图并执行 Skill |
+
+**执行响应 data 结构**（`SkillExecutionResult`）：
+
+```json
+{
+  "skillName": "weather-report",
+  "success": true,
+  "errorMessage": null,
+  "duration": 128,
+  "stepResults": [
+    {
+      "stepOrder": 1,
+      "toolName": "weather_query",
+      "output": "北京 晴 24℃",
+      "success": true,
+      "error": null,
+      "duration": 110
+    }
+  ],
+  "context": {}
+}
+```
+
+**自动执行请求体**：
+
+```json
+{ "input": "北京今天天气怎么样", "params": {} }
+```
+
+> 📌 Skill 的执行步骤来自 `javachain/src/main/resources/.trae/skills/*/SKILL.md`。识别顺序为
+> 「LLM 意图识别 → 触发词匹配」，两者都未命中时返回失败并列出可用 Skill。
+> 步骤中声明的工具必须已注册（本地 `@Tool` 方法或 Nacos MCP Registry 中的远端工具），
+> 否则该步骤会以失败结束并返回 `Tool not found` 说明。
+
+### 4.9 MCP Server 与插件治理
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/javachain/mcp/servers` | 列出已发现的 MCP Server |
+| DELETE | `/api/javachain/mcp/servers/{serverName}` | 注销指定 Server |
+| POST | `/api/javachain/mcp/plugins/load` | 登记插件包 |
+| POST | `/api/javachain/mcp/tools/{toolName}/execute` | 执行指定 MCP 工具 |
+| GET | `/api/javachain/plugin-governance/list?includeDisabled=` | 插件列表 |
+| POST | `/api/javachain/plugin-governance/enable/{pluginId}` | 启用插件 |
+| POST | `/api/javachain/plugin-governance/disable/{pluginId}` | 禁用插件 |
+| GET | `/api/javachain/plugin-governance/check/{pluginId}/{version}` | 兼容性判定 |
+| POST | `/api/javachain/plugin-governance/compare` | 版本号比较 |
+
+**登记插件请求体**：
+
+```json
+{ "jarPath": "./plugins/demo-plugin.jar" }
+```
+
+> ⚠️ 注销 Server 会同时挂起该 Server 的自动发现（否则下一次刷新会被重新注册回来），
+> 需要恢复时由后端重新注册。
+>
+> 📌 `plugins/load` 的语义是**登记插件包元信息**（读取包内 `META-INF/plugin.json`
+> 或 `MANIFEST.MF`，并计算 SHA-256），**不做类加载**。动态加载插件类需要独立的
+> 类加载器与工具注册流程，当前未实现。
+
+**版本比较请求体与响应**：
+
+```json
+{ "v1": "1.2.0", "v2": "1.10.0" }
+```
+
+```json
+{ "v1": "1.2.0", "v2": "1.10.0", "comparison": "<", "result": -1 }
+```
+
+**兼容性判定响应**：
+
+```json
+{
+  "pluginId": "demo-plugin",
+  "pluginName": "演示插件",
+  "pluginVersion": "2.0.0",
+  "requestedVersion": "1.5.0",
+  "comparison": ">",
+  "compatible": true,
+  "reason": "插件版本 2.0.0 满足目标版本 1.5.0"
+}
+```
+
 ---
 
 ## 5. 接口速查表
@@ -948,6 +1041,9 @@ GET /api/javachain/agent/steps
 | AI 知识库 | 4 | `/api/javachain/chat/rag` |
 | AI 文件 | 3 | `/api/javachain/chat/files` |
 | AI MCP | 2 + 天气 | `/api/javachain/chat` |
+| AI Skills | 4 | `/api/javachain/skills` |
+| AI MCP 管理 | 4 | `/api/javachain/mcp` |
+| AI 插件治理 | 5 | `/api/javachain/plugin-governance` |
 | AI Agent | 7 | `/api/javachain/agent` |
 | AI 文档 | 4 | `/api/javachain/document` |
 
@@ -997,4 +1093,5 @@ curl -X POST http://localhost:8085/api/javachain/chat/rag \
 
 | 版本 | 日期 | 变更内容 | 关联 Issue | 修改人 |
 | --- | --- | --- | --- | --- |
+| v1.1 | 2026-10-06 | 补充 javachain 的 Skills / MCP Server 管理 / 插件治理共 13 个接口（§4.8、§4.9），并更新速查表 | — | — |
 | v1.0 | 2026-10-04 | 初版，整理约 90 个接口（system / business / javachain） | — | — |

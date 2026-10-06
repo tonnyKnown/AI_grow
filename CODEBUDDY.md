@@ -17,6 +17,7 @@ OA 智能办公管理系统 — a Spring Cloud microservice backend + Vue 3 fron
 | Database design (tables, columns, indexes) | `docs/04-数据库/数据库设计文档.md` |
 | Deployment & ops (ports, Docker, troubleshooting) | `docs/05-运维/部署运维手册.md` |
 | Dev standards & contribution guide | `docs/06-规范/开发规范与贡献指南.md` |
+| Doc authoring standard (structure, headings, formatting) | `docs/06-规范/文档编写规范.md` |
 | Requirement/change workflow (Issue-driven 9 steps) | `docs/06-规范/需求开发流程.md` |
 | Change/version management rules (versioning, archiving) | `docs/06-规范/变更管理规范.md` |
 | Project changelog & known issues | `docs/CHANGELOG.md` |
@@ -27,6 +28,17 @@ OA 智能办公管理系统 — a Spring Cloud microservice backend + Vue 3 fron
 When changing code, keep the matching doc in sync (see `docs/README.md` → 文档维护). When adding a doc, place it in the numbered `docs/<NN-分类>/` directory and register it in `docs/README.md`.
 
 > ⚠️ **Any requirement/behavior change must be Issue-driven** — file a GitHub Issue first, then archive the old doc version to `docs/archive/` **before** editing, bump the doc version, and add a change-record row. Do not edit PRD/TRD/API/DB docs directly. See `docs/06-规范/需求开发流程.md`.
+
+> 📌 **When writing or editing any doc under `docs/`**, follow `docs/06-规范/文档编写规范.md`: single H1, `## N.` numbered H2 (except the trailing unnumbered `## 变更记录`), `### N.M` H3, 4-field blockquote header, `| --- |` table separators, language-tagged code fences (`text` for plain output), markers limited to ✅❌⚠️📌💡, and relative links only (never machine-absolute paths).
+
+**After changing docs, run the checker** (exit 0 = clean):
+
+```bash
+python scripts/check-docs.py            # all docs
+python scripts/check-docs.py --links-only
+```
+
+It validates heading structure, code-fence language tags, table style, markers, link targets, and anchors against `docs/06-规范/文档编写规范.md`. `docs/archive/`, `docs/_templates/`, `README.md`, `CHANGELOG.md` and this file are exempt from the H2-numbering rule.
 
 ## Build & Run Commands
 
@@ -111,7 +123,7 @@ Nacos console inside Docker: `nacos` / `nOn2h1l8cHSG`. XXL-Job console: `admin` 
 
 ### Request flow
 
-```
+```text
 Browser -> Vite dev 5173 (proxy /api) [or nginx 80 in Docker] -> Gateway 8085 -> microservice
 ```
 
